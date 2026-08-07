@@ -295,6 +295,8 @@ export default function MapPage() {
   const startViewerRef = useRef<HTMLDivElement | null>(null)
   const viewerRef = useRef<HTMLDivElement | null>(null)
   const viewerImgRef = useRef<HTMLImageElement | null>(null)
+  const [viewerViewportSize, setViewerViewportSize] = useState({ width: 0, height: 0 })
+  const [viewerImageSize, setViewerImageSize] = useState({ width: 0, height: 0 })
   const wheelFocusRef = useRef<null | { u: number; v: number; clientX: number; clientY: number }>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
@@ -344,12 +346,38 @@ export default function MapPage() {
     return resolveMapUrl(maps, mapPath, mapType)
   }, [maps, mapPath, mapType])
 
+  useLayoutEffect(() => {
+    if (!inViewer) return
+    const viewer = viewerRef.current
+    if (!viewer) return
+    const updateSize = () => {
+      const rect = viewer.getBoundingClientRect()
+      setViewerViewportSize({ width: rect.width, height: rect.height })
+    }
+    updateSize()
+    const observer = new ResizeObserver(updateSize)
+    observer.observe(viewer)
+    return () => observer.disconnect()
+  }, [inViewer, selectedMapUrl])
+
+  const mobileViewerImageWidth = useMemo(() => {
+    if (!narrow || !viewerImageSize.width || !viewerImageSize.height) return null
+    if (!viewerViewportSize.width || !viewerViewportSize.height) return null
+    const fitWidth = Math.min(
+      viewerImageSize.width,
+      viewerViewportSize.width,
+      viewerViewportSize.height * (viewerImageSize.width / viewerImageSize.height),
+    )
+    return fitWidth * zoom
+  }, [narrow, viewerImageSize, viewerViewportSize, zoom])
+
   // Reset pan/zoom when switching maps or map type.
   useEffect(() => {
     wheelFocusRef.current = null
     setZoom(1)
     setPan({ x: 0, y: 0 })
     setDragging(false)
+    setViewerImageSize({ width: 0, height: 0 })
   }, [selectedMapUrl])
 
   /** After wheel zoom, correct pan in the same frame (before paint) so there is no one-frame “jump”. */
@@ -850,8 +878,20 @@ export default function MapPage() {
                   src={selectedMapUrl}
                   alt={viewerTitle}
                   draggable={false}
+                  onLoad={(event) => {
+                    setViewerImageSize({
+                      width: event.currentTarget.naturalWidth,
+                      height: event.currentTarget.naturalHeight,
+                    })
+                  }}
                   style={{
-                    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                    width: mobileViewerImageWidth === null ? undefined : `${mobileViewerImageWidth}px`,
+                    maxWidth: mobileViewerImageWidth === null ? undefined : 'none',
+                    maxHeight: mobileViewerImageWidth === null ? undefined : 'none',
+                    willChange: mobileViewerImageWidth === null ? undefined : 'auto',
+                    transform: mobileViewerImageWidth === null
+                      ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
+                      : `translate(${pan.x}px, ${pan.y}px)`,
                     transformOrigin: 'center center',
                   }}
                 />
