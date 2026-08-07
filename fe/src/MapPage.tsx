@@ -1304,10 +1304,8 @@ export default function MapPage() {
                             height={Math.max(1, y2 - y1)}
                             fill="rgba(255, 255, 255, 0.04)"
                             stroke="rgba(255, 210, 120, 0.7)"
-                            strokeWidth={Math.max(
-                              8,
-                              Math.min(32, Math.round(startMapNaturalSize.w / 520)),
-                            )}
+                            strokeWidth={2}
+                            vectorEffect="non-scaling-stroke"
                             strokeLinejoin="round"
                           />
                         </g>

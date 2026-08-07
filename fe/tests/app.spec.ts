@@ -194,6 +194,9 @@ test('overworld region hints remain visible at deep zoom', async ({ page }) => {
   await expect(page.getByLabel('Zoom level')).toHaveText('1000%')
   await expect(page.locator('.tldAreaOverlay')).toBeVisible()
   await expect(page.locator('.tldAreaOverlay')).toHaveCSS('opacity', '1')
+  const firstHint = page.locator('.tldAreaOverlay rect').first()
+  await expect(firstHint).toHaveAttribute('stroke-width', '2')
+  await expect(firstHint).toHaveAttribute('vector-effect', 'non-scaling-stroke')
 })
 
 test('mobile zoom controls stay anchored to the viewport', async ({ page, isMobile }) => {
