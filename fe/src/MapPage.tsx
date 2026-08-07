@@ -340,6 +340,7 @@ export default function MapPage() {
   const toLocation = (rid: string, lid: string) => `/region/${encodeURIComponent(rid)}/${encodeURIComponent(lid)}`
 
   const inViewer = mapPath.length > 0
+  const maxZoom = inViewer ? 6 : 10
 
   const base = import.meta.env.BASE_URL
   const startMapSrc = `${base}assets/img/homemap.png`
@@ -437,7 +438,7 @@ export default function MapPage() {
     if (imageRect.width < 1 || imageRect.height < 1) return
     const clientX = viewerRect.left + viewerRect.width / 2
     const clientY = viewerRect.top + viewerRect.height / 2
-    const next = Math.min(6, Math.max(0.5, zoom * factor))
+    const next = Math.min(maxZoom, Math.max(0.5, zoom * factor))
     if (Math.abs(next - zoom) < 1e-5) return
     zoomFocusRef.current = {
       u: (clientX - imageRect.left) / imageRect.width,
@@ -492,7 +493,7 @@ export default function MapPage() {
     if (e.deltaMode === 1) dy *= 16
     if (e.deltaMode === 2) dy *= 800
     // Exponential step: many small trackpad events accumulate smoothly; large mouse steps still feel continuous.
-    const z1 = Math.min(6, Math.max(0.5, z0 * Math.exp(-dy * 0.0011)))
+    const z1 = Math.min(maxZoom, Math.max(0.5, z0 * Math.exp(-dy * 0.0011)))
     if (Math.abs(z1 - z0) < 1e-5) return
 
     zoomFocusRef.current = { u, v, clientX: e.clientX, clientY: e.clientY }
@@ -582,7 +583,7 @@ export default function MapPage() {
       const dy = pts[0].y - pts[1].y
       const dist = Math.hypot(dx, dy)
       const ratio = dist / pinch.dist
-      const next = Math.min(Math.max(pinch.zoom * ratio, 0.5), 6)
+      const next = Math.min(Math.max(pinch.zoom * ratio, 0.5), maxZoom)
       if (Math.abs(next - zoom) < 1e-5) return
 
       const midpointX = (pts[0].x + pts[1].x) / 2

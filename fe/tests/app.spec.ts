@@ -71,6 +71,9 @@ test('zoom controls and keyboard recovery work', async ({ page }) => {
   await page.locator('.tldViewer').focus()
   await page.keyboard.press('+')
   await expect(zoom).toHaveText('156%')
+  for (let step = 0; step < 20; step += 1) await page.getByLabel('Zoom in').click()
+  await expect(zoom).toHaveText('600%')
+  await page.locator('.tldViewer').focus()
   await page.keyboard.press('0')
   await expect(zoom).toHaveText('100%')
 })
@@ -180,6 +183,8 @@ test('mobile overworld zoom uses sharp layout sizing instead of transform scalin
 
   for (let step = 0; step < 2; step += 1) await page.getByLabel('Zoom in').click()
   await expect(page.locator('.tldAreaOverlay')).toHaveCSS('opacity', '0')
+  for (let step = 0; step < 20; step += 1) await page.getByLabel('Zoom in').click()
+  await expect(page.getByLabel('Zoom level')).toHaveText('1000%')
 })
 
 test('mobile zoom controls stay anchored to the viewport', async ({ page, isMobile }) => {
