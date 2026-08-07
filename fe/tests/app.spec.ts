@@ -182,9 +182,18 @@ test('mobile overworld zoom uses sharp layout sizing instead of transform scalin
   expect(Math.abs(overlayBox!.height - imageBox!.height)).toBeLessThan(1)
 
   for (let step = 0; step < 2; step += 1) await page.getByLabel('Zoom in').click()
-  await expect(page.locator('.tldAreaOverlay')).toHaveCSS('opacity', '0')
   for (let step = 0; step < 20; step += 1) await page.getByLabel('Zoom in').click()
   await expect(page.getByLabel('Zoom level')).toHaveText('1000%')
+  await expect(page.locator('.tldAreaOverlay')).toHaveCSS('opacity', '1')
+})
+
+test('overworld region hints remain visible at deep zoom', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('.tldAreaOverlay')).toBeVisible()
+  for (let step = 0; step < 12; step += 1) await page.getByLabel('Zoom in').click()
+  await expect(page.getByLabel('Zoom level')).toHaveText('1000%')
+  await expect(page.locator('.tldAreaOverlay')).toBeVisible()
+  await expect(page.locator('.tldAreaOverlay')).toHaveCSS('opacity', '1')
 })
 
 test('mobile zoom controls stay anchored to the viewport', async ({ page, isMobile }) => {

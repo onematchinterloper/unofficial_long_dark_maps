@@ -721,12 +721,6 @@ body {
   height: 100%;
   overflow: visible;
   pointer-events: none;
-  opacity: 1;
-  transition: opacity 0.16s ease;
-}
-
-.tldAreaOverlay--detail {
-  opacity: 0;
 }
 
 .tld__start--dev {
