@@ -16,6 +16,21 @@ body {
   overflow: hidden; /* lock page: no browser scrolling */
 }
 
+.tldStatic {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  padding: 24px;
+  text-align: center;
+  color: #fff;
+  background: #2c2c2c;
+}
+
+:where(button, a, [tabindex]):focus-visible {
+  outline: 3px solid #ffd278;
+  outline-offset: 3px;
+}
+
 body {
   margin: 0;
   min-height: 100dvh;
@@ -470,6 +485,7 @@ body {
 
 
 .tld__start {
+  position: relative;
   width: 100%;
   flex: 1;
   min-height: 0;
@@ -489,6 +505,7 @@ body {
   display: grid;
   place-items: center;
   overflow: hidden;
+  position: relative;
 }
 
 .tldViewer {
@@ -499,6 +516,78 @@ body {
   cursor: grab;
   touch-action: none;
   overflow: hidden;
+}
+
+.tldViewerControls {
+  position: absolute;
+  z-index: 10;
+  right: max(12px, env(safe-area-inset-right, 0px));
+  bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(20, 20, 20, 0.88);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  user-select: none;
+}
+
+.tldViewerControls button,
+.tldViewerStatus button,
+.tldViewerStatus a {
+  min-width: 42px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.tldViewerControls output {
+  min-width: 3.5rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+}
+
+.tldViewerHint,
+.tldViewerStatus {
+  position: absolute;
+  z-index: 9;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 24px);
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(20, 20, 20, 0.82);
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  font-size: 0.82rem;
+  pointer-events: none;
+}
+
+.tldViewerStatus {
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.tldViewerStatus--error {
+  display: grid;
+  gap: 12px;
+  min-width: min(22rem, calc(100% - 24px));
 }
 
 .tldViewer--dragging {
@@ -614,12 +703,14 @@ body {
     max-width: 100%;
   }
 
-  .tldMenu__backdrop {
+.tldMenu__backdrop {
     position: fixed;
     z-index: 200;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
     pointer-events: auto;
+    border: 0;
+    padding: 0;
   }
 
   .tldLayout--narrow .tldMain {
@@ -698,5 +789,11 @@ body {
   .tldMenu__pill {
     min-height: 40px;
     padding: 10px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tldMenu {
+    transition: none !important;
   }
 }

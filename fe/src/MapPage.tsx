@@ -290,7 +290,13 @@ export default function MapPage() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [mapType, setMapType] = useState(() => pickValidMapType(readMapTypeFromCookie()))
   const [maps, setMaps] = useState<MapsData | null>(null)
+  const [catalogStatus, setCatalogStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [imageStatus, setImageStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [imageRetry, setImageRetry] = useState(0)
   const [menuCollapsed, setMenuCollapsed] = useState(() => readMenuCollapsedFromCookie())
+  const menuRef = useRef<HTMLElement | null>(null)
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null)
+  const drawerWasOpenRef = useRef(false)
   const startImgRef = useRef<HTMLImageElement | null>(null)
   const startViewerRef = useRef<HTMLDivElement | null>(null)
   const viewerRef = useRef<HTMLDivElement | null>(null)
@@ -300,6 +306,7 @@ export default function MapPage() {
   const zoomFocusRef = useRef<null | { u: number; v: number; clientX: number; clientY: number }>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+  const [showViewerHint, setShowViewerHint] = useState(true)
   /** Natural pixel size of bundled homemap.png (needed for SVG region overlay aligned with clicks). */
   const [startMapNaturalSize, setStartMapNaturalSize] = useState<{ w: number; h: number } | null>(null)
   const [dragging, setDragging] = useState(false)
@@ -330,10 +337,16 @@ export default function MapPage() {
         const res = await fetch(`${base}assets/js/maps.json`)
         if (!res.ok) throw new Error(`maps.json HTTP ${res.status}`)
         const json = (await res.json()) as MapsData
-        if (!cancelled) setMaps(json)
+        if (!cancelled) {
+          setMaps(json)
+          setCatalogStatus('ready')
+        }
       } catch (e) {
         console.error(e)
-        if (!cancelled) setMaps(null)
+        if (!cancelled) {
+          setMaps(null)
+          setCatalogStatus('error')
+        }
       }
     })()
     return () => {
@@ -378,7 +391,51 @@ export default function MapPage() {
     setPan({ x: 0, y: 0 })
     setDragging(false)
     setViewerImageSize({ width: 0, height: 0 })
+    setImageStatus(selectedMapUrl ? 'loading' : 'ready')
+    setImageRetry(0)
   }, [selectedMapUrl])
+
+  const fitMap = () => {
+    setShowViewerHint(false)
+    zoomFocusRef.current = null
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
+  }
+
+  const zoomFromViewerCenter = (factor: number) => {
+    setShowViewerHint(false)
+    const viewer = inViewer ? viewerRef.current : startViewerRef.current
+    const img = inViewer ? viewerImgRef.current : startImgRef.current
+    if (!viewer || !img) return
+    const viewerRect = viewer.getBoundingClientRect()
+    const imageRect = img.getBoundingClientRect()
+    if (imageRect.width < 1 || imageRect.height < 1) return
+    const clientX = viewerRect.left + viewerRect.width / 2
+    const clientY = viewerRect.top + viewerRect.height / 2
+    const next = Math.min(6, Math.max(0.5, zoom * factor))
+    if (Math.abs(next - zoom) < 1e-5) return
+    zoomFocusRef.current = {
+      u: (clientX - imageRect.left) / imageRect.width,
+      v: (clientY - imageRect.top) / imageRect.height,
+      clientX,
+      clientY,
+    }
+    setZoom(next)
+  }
+
+  const onViewerKeyDown = (event: React.KeyboardEvent) => {
+    const panStep = event.shiftKey ? 120 : 48
+    if (event.key === '+' || event.key === '=') zoomFromViewerCenter(1.25)
+    else if (event.key === '-' || event.key === '_') zoomFromViewerCenter(0.8)
+    else if (event.key === '0' || event.key === 'Home') fitMap()
+    else if (event.key === 'ArrowLeft') setPan((current) => ({ ...current, x: current.x + panStep }))
+    else if (event.key === 'ArrowRight') setPan((current) => ({ ...current, x: current.x - panStep }))
+    else if (event.key === 'ArrowUp') setPan((current) => ({ ...current, y: current.y + panStep }))
+    else if (event.key === 'ArrowDown') setPan((current) => ({ ...current, y: current.y - panStep }))
+    else return
+    setShowViewerHint(false)
+    event.preventDefault()
+  }
 
   /** Keep the image point under the mouse or pinch midpoint fixed while its rendered size changes. */
   useLayoutEffect(() => {
@@ -396,6 +453,7 @@ export default function MapPage() {
   }, [zoom, inViewer])
 
   const applyWheelZoomToCursor = (e: WheelEvent) => {
+    setShowViewerHint(false)
     const img = (e.currentTarget as HTMLElement | null)?.querySelector('img') as HTMLImageElement | null
     if (!img) return
     const r0 = img.getBoundingClientRect()
@@ -436,13 +494,23 @@ export default function MapPage() {
 
   // Pointer-based drag/pinch.
   const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map())
-  const pinchRef = useRef<{ dist: number; zoom: number } | null>(null)
+  const pinchRef = useRef<{
+    dist: number
+    zoom: number
+    u: number
+    v: number
+  } | null>(null)
   const dragStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null)
   const hadTwoPointGestureRef = useRef(false)
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    setShowViewerHint(false)
+    try {
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    } catch {
+      // Synthetic assistive/test events may not have an active native pointer to capture.
+    }
     pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
 
     if (pointersRef.current.size === 1) {
@@ -453,7 +521,16 @@ export default function MapPage() {
       const pts = Array.from(pointersRef.current.values())
       const dx = pts[0].x - pts[1].x
       const dy = pts[0].y - pts[1].y
-      pinchRef.current = { dist: Math.hypot(dx, dy), zoom }
+      const midpointX = (pts[0].x + pts[1].x) / 2
+      const midpointY = (pts[0].y + pts[1].y) / 2
+      const img = inViewer ? viewerImgRef.current : startImgRef.current
+      const rect = img?.getBoundingClientRect()
+      pinchRef.current = {
+        dist: Math.hypot(dx, dy),
+        zoom,
+        u: rect && rect.width >= 1 ? (midpointX - rect.left) / rect.width : 0.5,
+        v: rect && rect.height >= 1 ? (midpointY - rect.top) / rect.height : 0.5,
+      }
       dragStartRef.current = null
       setDragging(false)
     }
@@ -485,17 +562,11 @@ export default function MapPage() {
 
       const midpointX = (pts[0].x + pts[1].x) / 2
       const midpointY = (pts[0].y + pts[1].y) / 2
-      const img = inViewer ? viewerImgRef.current : startImgRef.current
-      if (img) {
-        const rect = img.getBoundingClientRect()
-        if (rect.width >= 1 && rect.height >= 1) {
-          zoomFocusRef.current = {
-            u: (midpointX - rect.left) / rect.width,
-            v: (midpointY - rect.top) / rect.height,
-            clientX: midpointX,
-            clientY: midpointY,
-          }
-        }
+      zoomFocusRef.current = {
+        u: pinch.u,
+        v: pinch.v,
+        clientX: midpointX,
+        clientY: midpointY,
       }
       setZoom(next)
     }
@@ -503,7 +574,19 @@ export default function MapPage() {
 
   const onPointerUpOrCancel = (e: React.PointerEvent) => {
     pointersRef.current.delete(e.pointerId)
-    if (pointersRef.current.size < 2) pinchRef.current = null
+    if (pointersRef.current.size < 2) {
+      pinchRef.current = null
+      const remaining = Array.from(pointersRef.current.values())[0]
+      if (remaining) {
+        dragStartRef.current = {
+          x: remaining.x,
+          y: remaining.y,
+          panX: pan.x,
+          panY: pan.y,
+        }
+        setDragging(true)
+      }
+    }
     if (pointersRef.current.size === 0) {
       if (
         !isDev &&
@@ -539,6 +622,37 @@ export default function MapPage() {
 
   const menuRegionTitle = inViewer ? viewerTitle : 'Overworld'
 
+  useEffect(() => {
+    const pageTitle = inViewer ? `${viewerTitle} Map — The Long Dark` : 'Unofficial Long Dark Maps'
+    const canonicalPath = inViewer
+      ? mapPath.length === 1
+        ? `/region/${encodeURIComponent(mapPath[0]!)}/`
+        : `/region/${encodeURIComponent(mapPath[0]!)}/${encodeURIComponent(mapPath[1]!)}/`
+      : '/'
+    document.title = pageTitle
+    const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+    if (canonical) canonical.href = `${window.location.origin}${base.replace(/\/$/, '')}${canonicalPath}`
+    const description = document.querySelector<HTMLMetaElement>('meta[name="description"]')
+    if (description) {
+      description.content = inViewer
+        ? `View the ${viewerTitle} map for The Long Dark, with Pilgrim and Interloper variants.`
+        : 'Browse Pilgrim, Interloper, and topographic maps for regions and transitions in The Long Dark.'
+    }
+  }, [base, inViewer, mapPath, viewerTitle])
+
+  const mapControls = (
+    <div className="tldViewerControls" aria-label="Map zoom controls">
+      <button type="button" onClick={() => zoomFromViewerCenter(0.8)} aria-label="Zoom out">
+        −
+      </button>
+      <output aria-live="polite" aria-label="Zoom level">{Math.round(zoom * 100)}%</output>
+      <button type="button" onClick={() => zoomFromViewerCenter(1.25)} aria-label="Zoom in">
+        +
+      </button>
+      <button type="button" onClick={fitMap}>Fit</button>
+    </div>
+  )
+
   const regions = useMemo(() => {
     if (!maps) return []
     return Object.keys(maps.regions).sort((a, b) => a.localeCompare(b))
@@ -571,9 +685,34 @@ export default function MapPage() {
   }, [location.pathname, narrow])
 
   useEffect(() => {
-    if (!narrow || !drawerOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setDrawerOpen(false)
+    if (!narrow || !drawerOpen) {
+      if (drawerWasOpenRef.current) menuButtonRef.current?.focus()
+      drawerWasOpenRef.current = false
+      return
+    }
+    drawerWasOpenRef.current = true
+    const drawer = menuRef.current
+    if (!drawer) return
+    const focusableSelector = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    const getFocusable = () => Array.from(drawer.querySelectorAll<HTMLElement>(focusableSelector))
+    getFocusable()[0]?.focus()
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setDrawerOpen(false)
+        return
+      }
+      const focusable = getFocusable()
+      if (event.key !== 'Tab' || focusable.length === 0) return
+      const first = focusable[0]!
+      const last = focusable[focusable.length - 1]!
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -721,6 +860,7 @@ export default function MapPage() {
 
   const menu = (
     <aside
+      ref={menuRef}
       id="tld-side-nav"
       className={[
         'tldMenu',
@@ -730,7 +870,8 @@ export default function MapPage() {
         .filter(Boolean)
         .join(' ')}
       aria-label="Navigation"
-      aria-hidden={narrow && !drawerOpen}
+      role={narrow ? 'dialog' : undefined}
+      aria-modal={narrow ? true : undefined}
     >
       <div className="tldMenu__header">
         <div className="tldMenu__headerText">
@@ -769,6 +910,7 @@ export default function MapPage() {
               type="button"
               className={mapType === t.id ? 'tldMenu__pill active' : 'tldMenu__pill'}
               onClick={() => setMapType(t.id)}
+              aria-pressed={mapType === t.id}
             >
               {t.title}
             </button>
@@ -841,6 +983,7 @@ export default function MapPage() {
   const mapTopBar = narrow ? (
     <div className="tldMapBar" role="navigation" aria-label="Map toolbar">
       <button
+        ref={menuButtonRef}
         type="button"
         className="tldMapBar__menuBtn"
         onClick={() => setDrawerOpen(true)}
@@ -859,71 +1002,101 @@ export default function MapPage() {
 
   const navBackdrop =
     narrow && drawerOpen ? (
-      <div
+      <button
+        type="button"
         className="tldMenu__backdrop"
-        role="presentation"
         onClick={() => setDrawerOpen(false)}
-        aria-hidden
+        aria-label="Close navigation menu"
       />
     ) : null
 
   if (inViewer) {
     return (
       <main className={['tldLayout', narrow && 'tldLayout--narrow'].filter(Boolean).join(' ')}>
-        {menu}
+        {(!narrow || drawerOpen) && menu}
         {navBackdrop}
-        <div className="tldMain">
+        <div className="tldMain" aria-hidden={narrow && drawerOpen ? true : undefined}>
           {mapTopBar}
           <section className="tld__viewer" aria-label="Map viewer">
             {selectedMapUrl ? (
-              <div
-                ref={viewerRef}
-                className={[
-                  dragging && !isDev ? 'tldViewer tldViewer--dragging' : 'tldViewer',
-                  isDev ? 'tldViewer--dev' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUpOrCancel}
-                onPointerCancel={onPointerUpOrCancel}
-              >
-                <img
-                  ref={viewerImgRef}
-                  src={selectedMapUrl}
-                  alt={viewerTitle}
-                  draggable={false}
-                  onLoad={(event) => {
-                    setViewerImageSize({
-                      width: event.currentTarget.naturalWidth,
-                      height: event.currentTarget.naturalHeight,
-                    })
-                  }}
-                  style={{
-                    width: mobileViewerImageWidth === null ? undefined : `${mobileViewerImageWidth}px`,
-                    maxWidth: mobileViewerImageWidth === null ? undefined : 'none',
-                    maxHeight: mobileViewerImageWidth === null ? undefined : 'none',
-                    willChange: mobileViewerImageWidth === null ? undefined : 'auto',
-                    transform: mobileViewerImageWidth === null
-                      ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
-                      : `translate(${pan.x}px, ${pan.y}px)`,
-                    transformOrigin: 'center center',
-                  }}
-                />
-                {isDev && (
-                  <LinkRectTool
-                    imageRef={viewerImgRef}
-                    mapPath={mapPath}
-                    mapTitle={viewerTitle}
-                    mapType={mapType}
+              <>
+                <div
+                  ref={viewerRef}
+                  className={[
+                    dragging && !isDev ? 'tldViewer tldViewer--dragging' : 'tldViewer',
+                    isDev ? 'tldViewer--dev' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  tabIndex={0}
+                  role="application"
+                  aria-label={`${viewerTitle} map. Drag to pan, pinch or use plus and minus to zoom, and use Fit to reset.`}
+                  onKeyDown={onViewerKeyDown}
+                  onPointerDown={onPointerDown}
+                  onPointerMove={onPointerMove}
+                  onPointerUp={onPointerUpOrCancel}
+                  onPointerCancel={onPointerUpOrCancel}
+                >
+                  <img
+                    key={`${selectedMapUrl}-${imageRetry}`}
+                    ref={viewerImgRef}
+                    src={selectedMapUrl}
+                    alt={viewerTitle}
+                    draggable={false}
+                    onLoad={(event) => {
+                      setViewerImageSize({
+                        width: event.currentTarget.naturalWidth,
+                        height: event.currentTarget.naturalHeight,
+                      })
+                      setImageStatus('ready')
+                    }}
+                    onError={() => setImageStatus('error')}
+                    style={{
+                      visibility: imageStatus === 'error' ? 'hidden' : undefined,
+                      width: mobileViewerImageWidth === null ? undefined : `${mobileViewerImageWidth}px`,
+                      maxWidth: mobileViewerImageWidth === null ? undefined : 'none',
+                      maxHeight: mobileViewerImageWidth === null ? undefined : 'none',
+                      willChange: mobileViewerImageWidth === null ? undefined : 'auto',
+                      transform: mobileViewerImageWidth === null
+                        ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
+                        : `translate(${pan.x}px, ${pan.y}px)`,
+                      transformOrigin: 'center center',
+                    }}
                   />
+                  {isDev && (
+                    <LinkRectTool
+                      imageRef={viewerImgRef}
+                      mapPath={mapPath}
+                      mapTitle={viewerTitle}
+                      mapType={mapType}
+                    />
+                  )}
+                </div>
+                {imageStatus === 'loading' && <p className="tldViewerStatus" role="status">Loading map…</p>}
+                {imageStatus === 'error' && (
+                  <div className="tldViewerStatus tldViewerStatus--error" role="alert">
+                    <strong>{viewerTitle} could not be loaded.</strong>
+                    <div className="tld__emptyViewer-actions">
+                      <button type="button" onClick={() => {
+                        setImageStatus('loading')
+                        setImageRetry((value) => value + 1)
+                      }}>Retry</button>
+                      <a href={selectedMapUrl} target="_blank" rel="noreferrer">Open original</a>
+                    </div>
+                  </div>
                 )}
-              </div>
-            ) : !maps ? (
+                {mapControls}
+                {showViewerHint && <p className="tldViewerHint">Pinch or use +/− to zoom • drag to move • Fit to reset</p>}
+              </>
+            ) : catalogStatus === 'loading' ? (
               <p className="tld__missing" role="status">
                 Loading map data…
               </p>
+            ) : catalogStatus === 'error' ? (
+              <div className="tld__emptyViewer" role="alert">
+                <p className="tld__emptyViewer-hint">The map catalogue could not be loaded.</p>
+                <button type="button" className="tldMenu__pill" onClick={() => window.location.reload()}>Retry</button>
+              </div>
             ) : mapType === 'topographic' ? (
               <div className="tld__emptyViewer" role="status">
                 <p className="tld__emptyViewer-hint">
@@ -939,7 +1112,7 @@ export default function MapPage() {
                 </div>
               </div>
             ) : (
-              <p className="tld__missing">No image URL in maps.json for this path and map type.</p>
+              <p className="tld__missing">This map is not available for {mapType} yet.</p>
             )}
           </section>
         </div>
@@ -949,9 +1122,9 @@ export default function MapPage() {
 
   return (
     <main className={['tldLayout', narrow && 'tldLayout--narrow'].filter(Boolean).join(' ')}>
-      {menu}
+      {(!narrow || drawerOpen) && menu}
       {navBackdrop}
-      <div className="tldMain">
+      <div className="tldMain" aria-hidden={narrow && drawerOpen ? true : undefined}>
         {mapTopBar}
         <section
           className={isDev ? 'tld__start tld__start--dev' : 'tld__start'}
@@ -965,6 +1138,10 @@ export default function MapPage() {
             ]
               .filter(Boolean)
               .join(' ')}
+            tabIndex={0}
+            role="application"
+            aria-label="World map. Drag to pan, pinch or use plus and minus to zoom, and use Fit to reset."
+            onKeyDown={onViewerKeyDown}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUpOrCancel}
@@ -1033,6 +1210,8 @@ export default function MapPage() {
               </div>
             </div>
           </div>
+          {mapControls}
+          {showViewerHint && <p className="tldViewerHint">Tap a region • pinch or use +/− to zoom • Fit to reset</p>}
         </section>
       </div>
     </main>
