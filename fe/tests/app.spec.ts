@@ -157,6 +157,28 @@ test('mobile pinch stays anchored and continues as one-finger pan', async ({ pag
   await viewer.dispatchEvent('pointerup', { ...pointer(1, midpoint.x - 100, midpoint.y + 30), buttons: 0 })
 })
 
+test('mobile overworld zoom uses sharp layout sizing instead of transform scaling', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'mobile-only behavior')
+  await page.goto('/')
+  const image = page.locator('#start-map-image')
+  const transform = page.locator('.tldStartTransform')
+  await expect(image).toBeVisible()
+  const before = await image.boundingBox()
+  expect(before).not.toBeNull()
+
+  await page.getByLabel('Zoom in').click()
+  const after = await image.boundingBox()
+  expect(after).not.toBeNull()
+  expect(after!.width).toBeGreaterThan(before!.width * 1.2)
+  await expect(transform).not.toHaveCSS('transform', /matrix\([^)]*1\.25/)
+
+  const imageBox = await image.boundingBox()
+  const overlayBox = await page.locator('.tldAreaOverlay').boundingBox()
+  expect(overlayBox).not.toBeNull()
+  expect(Math.abs(overlayBox!.width - imageBox!.width)).toBeLessThan(1)
+  expect(Math.abs(overlayBox!.height - imageBox!.height)).toBeLessThan(1)
+})
+
 test('mobile zoom controls stay anchored to the viewport', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'mobile-only behavior')
   await page.goto('region/forsaken-airfield/')

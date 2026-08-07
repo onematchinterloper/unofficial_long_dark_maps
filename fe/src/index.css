@@ -709,6 +709,10 @@ body {
   max-width: 100%;
 }
 
+.tldStartMapStack > img {
+  display: block;
+}
+
 .tldAreaOverlay {
   position: absolute;
   left: 0;

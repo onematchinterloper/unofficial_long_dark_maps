@@ -374,8 +374,8 @@ export default function MapPage() {
   }, [maps, mapPath, mapType])
 
   useLayoutEffect(() => {
-    if (!inViewer) return
-    const viewer = viewerRef.current
+    if (isAbout) return
+    const viewer = inViewer ? viewerRef.current : startViewerRef.current
     if (!viewer) return
     const updateSize = () => {
       const rect = viewer.getBoundingClientRect()
@@ -385,7 +385,7 @@ export default function MapPage() {
     const observer = new ResizeObserver(updateSize)
     observer.observe(viewer)
     return () => observer.disconnect()
-  }, [inViewer, selectedMapUrl])
+  }, [inViewer, isAbout, selectedMapUrl])
 
   const mobileViewerImageWidth = useMemo(() => {
     if (!narrow || !viewerImageSize.width || !viewerImageSize.height) return null
@@ -397,6 +397,17 @@ export default function MapPage() {
     )
     return fitWidth * zoom
   }, [narrow, viewerImageSize, viewerViewportSize, zoom])
+
+  const mobileStartMapWidth = useMemo(() => {
+    if (!narrow || !startMapNaturalSize) return null
+    if (!viewerViewportSize.width || !viewerViewportSize.height) return null
+    const fitWidth = Math.min(
+      startMapNaturalSize.w,
+      viewerViewportSize.width,
+      viewerViewportSize.height * (startMapNaturalSize.w / startMapNaturalSize.h),
+    )
+    return fitWidth * zoom
+  }, [narrow, startMapNaturalSize, viewerViewportSize, zoom])
 
   // Reset pan/zoom when switching maps or map type.
   useEffect(() => {
@@ -1245,17 +1256,26 @@ export default function MapPage() {
             <div
               className="tldStartTransform"
               style={{
-                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                width: mobileStartMapWidth === null ? undefined : `${mobileStartMapWidth}px`,
+                maxWidth: mobileStartMapWidth === null ? undefined : 'none',
+                willChange: mobileStartMapWidth === null ? undefined : 'auto',
+                transform: mobileStartMapWidth === null
+                  ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
+                  : `translate(${pan.x}px, ${pan.y}px)`,
                 transformOrigin: 'center center',
               }}
             >
-              <div className="tldStartMapStack">
+              <div
+                className="tldStartMapStack"
+                style={mobileStartMapWidth === null ? undefined : { width: '100%', maxWidth: 'none' }}
+              >
                 <img
                   ref={startImgRef}
                   src={startMapSrc}
                   alt="Start map — drag to pan, scroll or pinch to zoom, tap a region to open it"
                   id="start-map-image"
                   draggable={false}
+                  style={mobileStartMapWidth === null ? undefined : { width: '100%', maxWidth: 'none', maxHeight: 'none' }}
                   onLoad={(e) => {
                     const img = e.currentTarget
                     if (img.naturalWidth > 0 && img.naturalHeight > 0) {
