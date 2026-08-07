@@ -5,5 +5,5 @@ import react from '@vitejs/plugin-react'
 // GitHub Actions: CI=true  →  https://<user>.github.io/unofficial_long_dark_maps/ (path = repo name)
 export default defineConfig({
   plugins: [react()],
-  base: process.env.CI === 'true' ? '/unofficial_long_dark_maps/' : '/',
+  base: process.env.SITE_BASE ?? (process.env.CI === 'true' ? '/unofficial_long_dark_maps/' : '/'),
 })

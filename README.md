@@ -14,6 +14,13 @@ npm run dev
 
 Open the URL Vite prints (e.g. `http://localhost:5173/`).
 
+Run the production, route-integrity, desktop/mobile browser, and accessibility checks:
+
+```bash
+cd fe
+npm test
+```
+
 **Production build locally (same as GitHub Pages):**
 
 ```bash
@@ -27,7 +34,7 @@ Use `CI=true` so the Vite `base` matches GitHub Pages (`/unofficial_long_dark_ma
 ## Production (GitHub Pages)
 
 - Repository **Settings → Pages → Build and deployment: GitHub Actions**.
-- Pushes to **`master`** run [`.github/workflows/deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml) and deploy `fe/dist`.
+- Pushes to **`master`** run [`.github/workflows/deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml), validate all generated routes and browser checks, then deploy `fe/dist`.
 - The site URL is **https://onematchinterloper.github.io/unofficial_long_dark_maps/**.
 
 `fe/vite.config.ts` sets `base` to `/unofficial_long_dark_maps/` when `CI=true`. If the repository name differs, change `base` to `/<repo-name>/`.

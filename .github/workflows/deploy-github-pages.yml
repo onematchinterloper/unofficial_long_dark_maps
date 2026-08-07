@@ -30,6 +30,16 @@ jobs:
         working-directory: fe
         env:
           CI: true
+      - run: npm run test:routes
+        working-directory: fe
+      - run: npx playwright install --with-deps chromium webkit
+        working-directory: fe
+      - run: npm run test:e2e
+        working-directory: fe
+      - run: npm run build
+        working-directory: fe
+        env:
+          CI: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: fe/dist

@@ -4,15 +4,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/generate-sitemap.mjs && cp dist/index.html dist/404.html",
-    "preview": "vite preview"
+    "build": "tsc -b && vite build && node scripts/generate-sitemap.mjs",
+    "preview": "vite preview",
+    "test": "CI=true npm run build && npm run test:routes && npm run test:e2e",
+    "test:routes": "node scripts/test-build.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.14.2"
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.62.1",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
