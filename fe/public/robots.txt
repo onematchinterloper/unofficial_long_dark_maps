@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://onematchinterloper.github.io/unofficial_long_dark_maps/sitemap.xml
