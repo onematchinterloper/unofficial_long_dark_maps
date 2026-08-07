@@ -297,7 +297,7 @@ export default function MapPage() {
   const viewerImgRef = useRef<HTMLImageElement | null>(null)
   const [viewerViewportSize, setViewerViewportSize] = useState({ width: 0, height: 0 })
   const [viewerImageSize, setViewerImageSize] = useState({ width: 0, height: 0 })
-  const wheelFocusRef = useRef<null | { u: number; v: number; clientX: number; clientY: number }>(null)
+  const zoomFocusRef = useRef<null | { u: number; v: number; clientX: number; clientY: number }>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   /** Natural pixel size of bundled homemap.png (needed for SVG region overlay aligned with clicks). */
@@ -373,18 +373,18 @@ export default function MapPage() {
 
   // Reset pan/zoom when switching maps or map type.
   useEffect(() => {
-    wheelFocusRef.current = null
+    zoomFocusRef.current = null
     setZoom(1)
     setPan({ x: 0, y: 0 })
     setDragging(false)
     setViewerImageSize({ width: 0, height: 0 })
   }, [selectedMapUrl])
 
-  /** After wheel zoom, correct pan in the same frame (before paint) so there is no one-frame “jump”. */
+  /** Keep the image point under the mouse or pinch midpoint fixed while its rendered size changes. */
   useLayoutEffect(() => {
-    const pending = wheelFocusRef.current
+    const pending = zoomFocusRef.current
     if (!pending) return
-    wheelFocusRef.current = null
+    zoomFocusRef.current = null
     const img = inViewer ? viewerImgRef.current : startImgRef.current
     if (!img) return
     const r1 = img.getBoundingClientRect()
@@ -412,7 +412,7 @@ export default function MapPage() {
     const z1 = Math.min(6, Math.max(0.5, z0 * Math.exp(-dy * 0.0011)))
     if (Math.abs(z1 - z0) < 1e-5) return
 
-    wheelFocusRef.current = { u, v, clientX: e.clientX, clientY: e.clientY }
+    zoomFocusRef.current = { u, v, clientX: e.clientX, clientY: e.clientY }
     setZoom(z1)
   }
 
@@ -481,6 +481,22 @@ export default function MapPage() {
       const dist = Math.hypot(dx, dy)
       const ratio = dist / pinch.dist
       const next = Math.min(Math.max(pinch.zoom * ratio, 0.5), 6)
+      if (Math.abs(next - zoom) < 1e-5) return
+
+      const midpointX = (pts[0].x + pts[1].x) / 2
+      const midpointY = (pts[0].y + pts[1].y) / 2
+      const img = inViewer ? viewerImgRef.current : startImgRef.current
+      if (img) {
+        const rect = img.getBoundingClientRect()
+        if (rect.width >= 1 && rect.height >= 1) {
+          zoomFocusRef.current = {
+            u: (midpointX - rect.left) / rect.width,
+            v: (midpointY - rect.top) / rect.height,
+            clientX: midpointX,
+            clientY: midpointY,
+          }
+        }
+      }
       setZoom(next)
     }
   }
