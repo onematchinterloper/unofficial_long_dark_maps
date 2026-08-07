@@ -218,12 +218,39 @@ body {
 }
 
 .tldMenu {
+  position: relative;
   width: 320px;
   height: 100%;
   background: #1f1f1f;
   border-right: 1px solid rgba(255, 255, 255, 0.12);
   padding: 12px;
   overflow: auto; /* menu scrolls internally */
+}
+
+.tldMenu__resizeHandle {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: -5px;
+  bottom: 0;
+  width: 10px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.tldMenu__resizeHandle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 4px;
+  bottom: 0;
+  width: 2px;
+  background: transparent;
+}
+
+.tldMenu__resizeHandle:hover::after,
+.tldMenu__resizeHandle:focus-visible::after {
+  background: #ffd278;
 }
 
 /* Narrow column (200px) for more map room; same controls as full width, nowrap + scroll as needed */
@@ -775,7 +802,8 @@ body {
   }
 
   .tldLayout--narrow .tldMain {
-    min-height: 100dvh;
+    height: 100dvh;
+    min-height: 0;
     display: flex;
     flex-direction: column;
   }

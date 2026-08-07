@@ -12,15 +12,22 @@ import { getRegionNode, MAP_TYPE_OPTIONS, pickValidMapType, resolveMapUrl } from
 import {
   readMapTypeFromCookie,
   readMenuCollapsedFromCookie,
+  readMenuWidthFromCookie,
   readOpenMenuGroupsFromCookie,
   writeMapTypeToCookie,
   writeMenuCollapsedToCookie,
+  writeMenuWidthToCookie,
   writeOpenMenuGroupsToCookie,
 } from './cookies'
 import { NavLink, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AboutPage from './AboutPage'
 
 const NARROW_LAYOUT_MQ = '(max-width: 1023px)'
+const MIN_MENU_WIDTH = 240
+
+function desktopMenuMaxWidth() {
+  return typeof window === 'undefined' ? 520 : Math.max(320, Math.round(window.innerWidth * 0.3))
+}
 
 function useNarrowLayout() {
   const [narrow, setNarrow] = useState(
@@ -295,6 +302,11 @@ export default function MapPage() {
   const [imageStatus, setImageStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [imageRetry, setImageRetry] = useState(0)
   const [menuCollapsed, setMenuCollapsed] = useState(() => readMenuCollapsedFromCookie())
+  const [menuWidth, setMenuWidth] = useState(() =>
+    Math.min(desktopMenuMaxWidth(), Math.max(MIN_MENU_WIDTH, readMenuWidthFromCookie())),
+  )
+  const [menuMaxWidth, setMenuMaxWidth] = useState(desktopMenuMaxWidth)
+  const menuResizeRef = useRef<{ startX: number; startWidth: number } | null>(null)
   const menuRef = useRef<HTMLElement | null>(null)
   const menuButtonRef = useRef<HTMLButtonElement | null>(null)
   const drawerWasOpenRef = useRef(false)
@@ -684,6 +696,21 @@ export default function MapPage() {
     writeMenuCollapsedToCookie(menuCollapsed)
   }, [menuCollapsed])
 
+  useEffect(() => {
+    writeMenuWidthToCookie(menuWidth)
+  }, [menuWidth])
+
+  useEffect(() => {
+    const updateMenuLimit = () => {
+      const maximum = desktopMenuMaxWidth()
+      setMenuMaxWidth(maximum)
+      setMenuWidth((width) => Math.min(maximum, Math.max(MIN_MENU_WIDTH, width)))
+    }
+    window.addEventListener('resize', updateMenuLimit)
+    updateMenuLimit()
+    return () => window.removeEventListener('resize', updateMenuLimit)
+  }, [])
+
   const effectiveMenuCollapsed = !narrow && menuCollapsed
 
   useEffect(() => {
@@ -882,6 +909,7 @@ export default function MapPage() {
       aria-label="Navigation"
       role={narrow ? 'dialog' : undefined}
       aria-modal={narrow ? true : undefined}
+      style={!narrow && !effectiveMenuCollapsed ? { width: `${menuWidth}px` } : undefined}
     >
       <div className="tldMenu__header">
         <div className="tldMenu__headerText">
@@ -993,6 +1021,44 @@ export default function MapPage() {
           About &amp; credits
         </NavLink>
       </div>
+      {!narrow && !effectiveMenuCollapsed && (
+        <div
+          className="tldMenu__resizeHandle"
+          role="separator"
+          aria-label="Resize navigation panel"
+          aria-orientation="vertical"
+          aria-valuemin={MIN_MENU_WIDTH}
+          aria-valuemax={menuMaxWidth}
+          aria-valuenow={menuWidth}
+          tabIndex={0}
+          onPointerDown={(event) => {
+            menuResizeRef.current = { startX: event.clientX, startWidth: menuWidth }
+            event.currentTarget.setPointerCapture(event.pointerId)
+          }}
+          onPointerMove={(event) => {
+            const resize = menuResizeRef.current
+            if (!resize) return
+            setMenuWidth(
+              Math.min(menuMaxWidth, Math.max(MIN_MENU_WIDTH, resize.startWidth + event.clientX - resize.startX)),
+            )
+          }}
+          onPointerUp={(event) => {
+            menuResizeRef.current = null
+            event.currentTarget.releasePointerCapture(event.pointerId)
+          }}
+          onPointerCancel={() => {
+            menuResizeRef.current = null
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+            event.preventDefault()
+            const direction = event.key === 'ArrowRight' ? 1 : -1
+            setMenuWidth((width) =>
+              Math.min(menuMaxWidth, Math.max(MIN_MENU_WIDTH, width + direction * (event.shiftKey ? 40 : 10))),
+            )
+          }}
+        />
+      )}
     </aside>
   )
 

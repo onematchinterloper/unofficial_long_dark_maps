@@ -39,6 +39,20 @@ test('about page presents credits and project information', async ({ page }) => 
   await expect(page).toHaveTitle('About & Credits — Unofficial Long Dark Maps')
 })
 
+test('about page scrolls to all credits on mobile', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'mobile-only behavior')
+  await page.goto('about/')
+  const about = page.locator('.aboutPage')
+  await expect(about).toBeVisible()
+  const dimensions = await about.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+  }))
+  expect(dimensions.scrollHeight).toBeGreaterThan(dimensions.clientHeight)
+  await about.evaluate((element) => element.scrollTo({ top: element.scrollHeight }))
+  await expect(page.getByRole('heading', { name: 'Feedback and contributions' })).toBeInViewport()
+})
+
 test('direct region and transition routes load as real pages', async ({ page }) => {
   for (const path of ['region/forsaken-airfield/', 'region/cave-brm-twm/']) {
     const response = await page.goto(path)
@@ -59,6 +73,19 @@ test('zoom controls and keyboard recovery work', async ({ page }) => {
   await expect(zoom).toHaveText('156%')
   await page.keyboard.press('0')
   await expect(zoom).toHaveText('100%')
+})
+
+test('desktop navigation panel can be resized and remembers its width', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'desktop-only behavior')
+  await page.goto('region/forsaken-airfield/')
+  const panel = page.getByRole('complementary', { name: 'Navigation' })
+  const handle = page.getByRole('separator', { name: 'Resize navigation panel' })
+  await expect(panel).toHaveCSS('width', '320px')
+  await handle.focus()
+  await page.keyboard.press('Shift+ArrowRight')
+  await expect(panel).toHaveCSS('width', '360px')
+  await page.reload()
+  await expect(panel).toHaveCSS('width', '360px')
 })
 
 test('image failure offers retry and original source', async ({ page }) => {

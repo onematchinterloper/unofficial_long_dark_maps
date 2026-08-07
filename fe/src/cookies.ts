@@ -2,6 +2,7 @@ const MAX_AGE_SEC = 60 * 60 * 24 * 365
 const MAP_TYPE = 'tldmap_map_type'
 const MENU_COLLAPSED = 'tldmap_menu_collapsed'
 const OPEN_GROUPS = 'tldmap_open_menu_groups'
+const MENU_WIDTH = 'tldmap_menu_width'
 
 function get(name: string): string | null {
   if (typeof document === 'undefined') return null
@@ -30,6 +31,15 @@ export function readMenuCollapsedFromCookie(): boolean {
 
 export function writeMenuCollapsedToCookie(collapsed: boolean) {
   set(MENU_COLLAPSED, collapsed ? '1' : '0')
+}
+
+export function readMenuWidthFromCookie(): number {
+  const width = Number(get(MENU_WIDTH))
+  return Number.isFinite(width) && width >= 240 ? width : 320
+}
+
+export function writeMenuWidthToCookie(width: number) {
+  set(MENU_WIDTH, String(Math.round(width)))
 }
 
 export function readOpenMenuGroupsFromCookie(): Set<string> {
