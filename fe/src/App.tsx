@@ -6,6 +6,7 @@ export function App() {
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route path="/" element={<MapPage />} />
+        <Route path="/about" element={<MapPage />} />
         <Route path="/region/:regionId" element={<MapPage />} />
         <Route path="/region/:regionId/:locationId" element={<MapPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -15,13 +15,17 @@ const escapeHtml = value => value
 function documentForRoute(template, route, { notFound = false } = {}) {
   const pageTitle = notFound
     ? 'Map not found — Unofficial Long Dark Maps'
-    : route.segments.length === 0
+    : route.pageType === 'home'
       ? 'Unofficial Long Dark Maps'
+      : route.pageType === 'about'
+        ? 'About & Credits — Unofficial Long Dark Maps'
       : `${route.title} Map — The Long Dark`
   const description = notFound
     ? 'The requested map page could not be found.'
-    : route.segments.length === 0
+    : route.pageType === 'home'
       ? 'Browse Pilgrim, Interloper, and topographic maps for regions and transitions in The Long Dark.'
+      : route.pageType === 'about'
+        ? 'About, credits, sources, privacy, and contribution information for Unofficial Long Dark Maps.'
       : `View the ${route.title} map for The Long Dark, with Pilgrim and Interloper variants.`
   const canonical = `${BASE_URL}${route.path}`
   const heading = route.parentTitle ? `${route.parentTitle}: ${route.title}` : route.title

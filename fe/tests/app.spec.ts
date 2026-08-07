@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('every catalog route returns 200', async ({ request }) => {
-  const paths = ['/']
+  const paths = ['/', '/about/']
   for (const group of [maps.regions, maps.transitions]) {
     for (const [mapId, map] of Object.entries<any>(group)) {
       paths.push(`/region/${encodeURIComponent(mapId)}/`)
@@ -24,8 +24,19 @@ test('every catalog route returns 200', async ({ request }) => {
       }
     }
   }
-  expect(paths).toHaveLength(44)
+  expect(paths).toHaveLength(45)
   for (const path of paths) expect((await request.get(path)).status(), path).toBe(200)
+})
+
+test('about page presents credits and project information', async ({ page }) => {
+  const response = await page.goto('about/')
+  expect(response?.status()).toBe(200)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('About & credits')
+  await expect(page.getByRole('heading', { name: 'Credits and map sources' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Disclaimer' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Privacy' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Feedback and contributions' })).toBeVisible()
+  await expect(page).toHaveTitle('About & Credits — Unofficial Long Dark Maps')
 })
 
 test('direct region and transition routes load as real pages', async ({ page }) => {

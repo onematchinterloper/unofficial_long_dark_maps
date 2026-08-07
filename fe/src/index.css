@@ -16,6 +16,61 @@ body {
   overflow: hidden; /* lock page: no browser scrolling */
 }
 
+.aboutPage {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  color: #f5f5f5;
+  background: #242424;
+}
+
+.aboutPage__content {
+  width: min(760px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 56px 0 max(72px, env(safe-area-inset-bottom));
+  line-height: 1.7;
+}
+
+.aboutPage__eyebrow {
+  margin: 0 0 8px;
+  color: #ffd278;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.aboutPage h1 {
+  margin: 0 0 20px;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  line-height: 1.08;
+}
+
+.aboutPage__intro {
+  margin: 0 0 48px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 1.12rem;
+}
+
+.aboutPage section {
+  padding: 28px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.aboutPage h2 {
+  margin: 0 0 10px;
+  font-size: 1.25rem;
+}
+
+.aboutPage p {
+  margin-top: 0;
+}
+
+.aboutPage a:not(.aboutPage__back) {
+  color: #ffd278;
+  text-underline-offset: 3px;
+}
+
 .tldStatic {
   min-height: 100dvh;
   display: grid;
@@ -271,6 +326,11 @@ body {
 
 .tldMenu__section {
   margin: 10px 0;
+}
+
+.tldMenu__section--about {
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tldMenu__label {

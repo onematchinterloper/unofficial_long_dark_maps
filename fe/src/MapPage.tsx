@@ -18,6 +18,7 @@ import {
   writeOpenMenuGroupsToCookie,
 } from './cookies'
 import { NavLink, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import AboutPage from './AboutPage'
 
 const NARROW_LAYOUT_MQ = '(max-width: 1023px)'
 
@@ -314,6 +315,7 @@ export default function MapPage() {
   const [searchParams] = useSearchParams()
   const { regionId, locationId } = useParams()
   const isDev = searchParams.get('dev') === '1' || searchParams.get('dev') === 'true'
+  const isAbout = location.pathname.replace(/\/$/, '').endsWith('/about')
   /** Empty = start map. [region] = level 2. [region, sub] = level 3. */
   const mapPath = useMemo(() => {
     if (!regionId) return []
@@ -620,11 +622,17 @@ export default function MapPage() {
 
   const viewerTitle = useMemo(() => titleForMapPath(maps, mapPath), [maps, mapPath])
 
-  const menuRegionTitle = inViewer ? viewerTitle : 'Overworld'
+  const menuRegionTitle = isAbout ? 'About & credits' : inViewer ? viewerTitle : 'Overworld'
 
   useEffect(() => {
-    const pageTitle = inViewer ? `${viewerTitle} Map — The Long Dark` : 'Unofficial Long Dark Maps'
-    const canonicalPath = inViewer
+    const pageTitle = isAbout
+      ? 'About & Credits — Unofficial Long Dark Maps'
+      : inViewer
+        ? `${viewerTitle} Map — The Long Dark`
+        : 'Unofficial Long Dark Maps'
+    const canonicalPath = isAbout
+      ? '/about/'
+      : inViewer
       ? mapPath.length === 1
         ? `/region/${encodeURIComponent(mapPath[0]!)}/`
         : `/region/${encodeURIComponent(mapPath[0]!)}/${encodeURIComponent(mapPath[1]!)}/`
@@ -634,11 +642,13 @@ export default function MapPage() {
     if (canonical) canonical.href = `${window.location.origin}${base.replace(/\/$/, '')}${canonicalPath}`
     const description = document.querySelector<HTMLMetaElement>('meta[name="description"]')
     if (description) {
-      description.content = inViewer
+      description.content = isAbout
+        ? 'About, credits, sources, privacy, and contribution information for Unofficial Long Dark Maps.'
+        : inViewer
         ? `View the ${viewerTitle} map for The Long Dark, with Pilgrim and Interloper variants.`
         : 'Browse Pilgrim, Interloper, and topographic maps for regions and transitions in The Long Dark.'
     }
-  }, [base, inViewer, mapPath, viewerTitle])
+  }, [base, inViewer, isAbout, mapPath, viewerTitle])
 
   const mapControls = (
     <div className="tldViewerControls" aria-label="Map zoom controls">
@@ -977,6 +987,12 @@ export default function MapPage() {
           {maps && transitions.map((t) => renderMapNavGroup(t))}
         </div>
       </div>
+
+      <div className="tldMenu__section tldMenu__section--about">
+        <NavLink className="tldMenu__item" to="/about">
+          About &amp; credits
+        </NavLink>
+      </div>
     </aside>
   )
 
@@ -1009,6 +1025,19 @@ export default function MapPage() {
         aria-label="Close navigation menu"
       />
     ) : null
+
+  if (isAbout) {
+    return (
+      <main className={['tldLayout', narrow && 'tldLayout--narrow'].filter(Boolean).join(' ')}>
+        {(!narrow || drawerOpen) && menu}
+        {navBackdrop}
+        <div className="tldMain" aria-hidden={narrow && drawerOpen ? true : undefined}>
+          {mapTopBar}
+          <AboutPage />
+        </div>
+      </main>
+    )
+  }
 
   if (inViewer) {
     return (

@@ -1,5 +1,8 @@
 export function routeManifest(maps) {
-  const routes = [{ path: '/', segments: [], title: 'Unofficial Long Dark Maps' }]
+  const routes = [
+    { path: '/', segments: [], title: 'Unofficial Long Dark Maps', pageType: 'home' },
+    { path: '/about/', filePath: '/about/', segments: [], title: 'About & Credits', pageType: 'about' },
+  ]
 
   for (const group of [maps.regions, maps.transitions]) {
     for (const [mapId, map] of Object.entries(group)) {

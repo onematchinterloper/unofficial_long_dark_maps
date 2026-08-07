@@ -8,7 +8,7 @@ const sitemap = readFileSync(new URL('../dist/sitemap.xml', import.meta.url), 'u
 const sitemapUrls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => match[1])
 const escapeHtml = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
-assert.equal(routes.length, 44, 'expected home plus all region, transition, and location routes')
+assert.equal(routes.length, 45, 'expected home, about, and all region, transition, and location routes')
 assert.equal(new Set(routes.map(route => route.path)).size, routes.length, 'route paths must be unique')
 assert.equal(sitemapUrls.length, routes.length, 'sitemap must contain every route exactly once')
 assert.equal(new Set(sitemapUrls).size, sitemapUrls.length, 'sitemap URLs must be unique')
@@ -19,7 +19,13 @@ for (const route of routes) {
     : new URL(`../dist${route.filePath}index.html`, import.meta.url)
   assert.ok(existsSync(documentUrl), `missing generated document for ${route.path}`)
   const html = readFileSync(documentUrl, 'utf8')
-  const expectedTitle = escapeHtml(route.path === '/' ? 'Unofficial Long Dark Maps' : `${route.title} Map — The Long Dark`)
+  const expectedTitle = escapeHtml(
+    route.pageType === 'home'
+      ? 'Unofficial Long Dark Maps'
+      : route.pageType === 'about'
+        ? 'About & Credits — Unofficial Long Dark Maps'
+        : `${route.title} Map — The Long Dark`,
+  )
   assert.ok(html.includes(`<title>${expectedTitle}</title>`), `${route.path} needs a unique route title`)
   assert.match(html, /<meta name="description"/, `${route.path} needs a description`)
   assert.match(html, /<link rel="canonical"/, `${route.path} needs a canonical URL`)
