@@ -177,6 +177,9 @@ test('mobile overworld zoom uses sharp layout sizing instead of transform scalin
   expect(overlayBox).not.toBeNull()
   expect(Math.abs(overlayBox!.width - imageBox!.width)).toBeLessThan(1)
   expect(Math.abs(overlayBox!.height - imageBox!.height)).toBeLessThan(1)
+
+  for (let step = 0; step < 2; step += 1) await page.getByLabel('Zoom in').click()
+  await expect(page.locator('.tldAreaOverlay')).toHaveCSS('opacity', '0')
 })
 
 test('mobile zoom controls stay anchored to the viewport', async ({ page, isMobile }) => {

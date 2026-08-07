@@ -1285,7 +1285,7 @@ export default function MapPage() {
                 />
                 {startMapNaturalSize && (
                   <svg
-                    className="tldAreaOverlay"
+                    className={zoom > 1.5 ? 'tldAreaOverlay tldAreaOverlay--detail' : 'tldAreaOverlay'}
                     viewBox={`0 0 ${startMapNaturalSize.w} ${startMapNaturalSize.h}`}
                     preserveAspectRatio="xMidYMid meet"
                     role="presentation"
