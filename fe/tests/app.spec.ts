@@ -130,6 +130,27 @@ test('mobile pinch stays anchored and continues as one-finger pan', async ({ pag
   await viewer.dispatchEvent('pointerup', { ...pointer(1, midpoint.x - 100, midpoint.y + 30), buttons: 0 })
 })
 
+test('mobile zoom controls stay anchored to the viewport', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'mobile-only behavior')
+  await page.goto('region/forsaken-airfield/')
+  const controls = page.locator('.tldViewerControls')
+  await expect(controls).toBeVisible()
+  const before = await controls.boundingBox()
+  expect(before).not.toBeNull()
+
+  for (let step = 0; step < 7; step += 1) await page.getByLabel('Zoom in').click()
+  const zoomedIn = await controls.boundingBox()
+  expect(zoomedIn).not.toBeNull()
+  expect(Math.abs(zoomedIn!.x - before!.x)).toBeLessThan(1)
+  expect(Math.abs(zoomedIn!.y - before!.y)).toBeLessThan(1)
+
+  for (let step = 0; step < 14; step += 1) await page.getByLabel('Zoom out').click()
+  const zoomedOut = await controls.boundingBox()
+  expect(zoomedOut).not.toBeNull()
+  expect(Math.abs(zoomedOut!.x - before!.x)).toBeLessThan(1)
+  expect(Math.abs(zoomedOut!.y - before!.y)).toBeLessThan(1)
+})
+
 test('has no serious automated accessibility violations', async ({ page }) => {
   await page.goto('region/forsaken-airfield/')
   await expect(page.locator('.tldViewer img')).toBeVisible()

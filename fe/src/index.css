@@ -592,6 +592,7 @@ body {
   background: rgba(20, 20, 20, 0.88);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   user-select: none;
+  touch-action: none;
 }
 
 .tldViewerControls button,
@@ -832,6 +833,12 @@ body {
   .tld__viewer {
     flex: 1;
     min-height: 0;
+  }
+
+  .tldViewerControls {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right, 0px));
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
   }
 
   .tldViewer img {
