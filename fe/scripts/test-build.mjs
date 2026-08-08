@@ -4,7 +4,7 @@ import { routeManifest } from './route-manifest.mjs'
 
 const maps = JSON.parse(readFileSync(new URL('../public/assets/js/maps.json', import.meta.url), 'utf8'))
 const routes = routeManifest(maps)
-const sitemap = readFileSync(new URL('../dist/sitemap.xml', import.meta.url), 'utf8')
+const sitemap = readFileSync(new URL('../dist/sitemap2.xml', import.meta.url), 'utf8')
 const sitemapUrls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => match[1])
 const escapeHtml = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
@@ -40,6 +40,6 @@ const notFound = readFileSync(new URL('../dist/404.html', import.meta.url), 'utf
 assert.match(notFound, /<meta name="robots" content="noindex"/)
 assert.match(notFound, /<title>Map not found — Unofficial Long Dark Maps<\/title>/)
 const robots = readFileSync(new URL('../dist/robots.txt', import.meta.url), 'utf8')
-assert.match(robots, /Sitemap: https:\/\/onematchinterloper\.github\.io\/unofficial_long_dark_maps\/sitemap\.xml/)
+assert.match(robots, /Sitemap: https:\/\/onematchinterloper\.github\.io\/unofficial_long_dark_maps\/sitemap2\.xml/)
 
 console.log(`build integrity: ${routes.length} routes, metadata, sitemap, and 404 passed`)

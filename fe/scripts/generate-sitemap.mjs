@@ -69,5 +69,5 @@ ${routes.map(route => `  <url><loc>${BASE_URL}${route.path}</loc></url>`).join('
 </urlset>
 `
 
-writeFileSync(new URL('../dist/sitemap.xml', import.meta.url), xml)
-console.log(`sitemap.xml: ${routes.length} URLs`)
+writeFileSync(new URL('../dist/sitemap2.xml', import.meta.url), xml)
+console.log(`sitemap2.xml: ${routes.length} URLs`)
