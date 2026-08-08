@@ -320,7 +320,7 @@ export default function MapPage() {
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   const [showViewerHint, setShowViewerHint] = useState(true)
-  /** Natural pixel size of bundled homemap.png (needed for SVG region overlay aligned with clicks). */
+  /** Natural pixel size of bundled homemap.webp (needed for SVG region overlay aligned with clicks). */
   const [startMapNaturalSize, setStartMapNaturalSize] = useState<{ w: number; h: number } | null>(null)
   const [dragging, setDragging] = useState(false)
   const navigate = useNavigate()
@@ -343,7 +343,7 @@ export default function MapPage() {
   const maxZoom = inViewer ? 6 : 10
 
   const base = import.meta.env.BASE_URL
-  const startMapSrc = `${base}assets/img/homemap.png`
+  const startMapSrc = `${base}assets/img/homemap.webp`
 
   useEffect(() => {
     let cancelled = false
