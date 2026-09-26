@@ -19,6 +19,8 @@ function documentForRoute(template, route, { notFound = false } = {}) {
       ? 'Unofficial Long Dark Maps'
       : route.pageType === 'about'
         ? 'About & Credits — Unofficial Long Dark Maps'
+      : route.pageType === 'starting-locations'
+        ? 'Starting Locations — The Long Dark'
       : `${route.title} Map — The Long Dark`
   const description = notFound
     ? 'The requested map page could not be found.'
@@ -26,6 +28,8 @@ function documentForRoute(template, route, { notFound = false } = {}) {
       ? 'Browse Pilgrim, Interloper, and topographic maps for regions and transitions in The Long Dark.'
       : route.pageType === 'about'
         ? 'About, credits, sources, privacy, and contribution information for Unofficial Long Dark Maps.'
+      : route.pageType === 'starting-locations'
+        ? 'Starting locations and region maps for The Long Dark.'
       : `View the ${route.title} map for The Long Dark, with Pilgrim and Interloper variants.`
   const canonical = `${BASE_URL}${route.path}`
   const heading = route.parentTitle ? `${route.parentTitle}: ${route.title}` : route.title

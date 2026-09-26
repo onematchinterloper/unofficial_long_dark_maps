@@ -1,0 +1,103 @@
+[
+  {
+    "mode": "interloper",
+    "region": "ash-canyon",
+    "title": "Ash Canyon",
+    "starting_locations": [
+      {
+        "id": 1,
+        "map": "assets/img/starting-locations/start-location-interloper-ash-canyon-map-1.png",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-ash-canyon-screenshot-1.png"
+      }
+    ]
+  },
+  {
+    "mode": "interloper",
+    "region": "blackrock",
+    "title": "Blackrock",
+    "starting_locations": [
+      {
+        "id": 1,
+        "map": "assets/img/starting-locations/start-location-interloper-blackrock-map-1.png",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-blackrock-screenshot-1.png"
+      }
+    ]
+  },
+  {
+    "mode": "interloper",
+    "region": "desolation-point",
+    "title": "Desolation Point",
+    "starting_locations": [
+      {
+        "id": 1,
+        "map": "assets/img/starting-locations/start-location-interloper-desolation-point-map-1.png",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-desolation-point-screenshot-1.png"
+      }
+    ]
+  },
+  {
+    "mode": "interloper",
+    "region": "forlorn-muskeg",
+    "title": "Forlorn Muskeg",
+    "starting_locations": [
+      {
+        "id": 1,
+        "map": "assets/img/starting-locations/start-location-interloper-forlorn-muskeg-map-1.png",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-forlorn-muskeg-screenshot-1.png"
+      }
+    ]
+  },
+  {
+    "mode": "interloper",
+    "region": "hushed-river-valley",
+    "title": "Hushed River Valley",
+    "starting_locations": [
+      {
+        "id": 1,
+        "map": "assets/img/starting-locations/start-location-interloper-hushed-river-valley-map-1.png",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-hushed-river-valley-screenshot-1.png"
+      }
+    ]
+  },
+  {
+    "mode": "interloper",
+    "region": "pleasant-valley",
+    "title": "Pleasant Valley",
+    "starting_locations": [
+      {
+        "id": 1,
+        "map": "assets/img/starting-locations/start-location-interloper-pleasant-valley-map-1.png",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-pleasant-valley-screenshot-1.png"
+      },
+      {
+        "id": 2,
+        "map": "assets/img/starting-locations/start-location-interloper-pleasant-valley-map-2.png",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-pleasant-valley-screenshot-2.png"
+      }
+    ]
+  },
+  {
+    "mode": "interloper",
+    "region": "timberwolf-mountain",
+    "title": "Timberwolf Mountain",
+    "starting_locations": [
+      {
+        "id": 1,
+        "map": "assets/img/starting-locations/start-location-interloper-timberwolf-mountain-map-1.png",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-timberwolf-mountain-screenshot-1.png"
+      }
+    ]
+  },
+  {
+    "mode": "misery",
+    "region": "pleasant-valley",
+    "title": "Pleasant Valley",
+    "starting_locations": [
+      {
+        "id": 1,
+        "map": "assets/img/starting-locations/start-location-misery-pleasant-valley-map-1.png",
+        "screenshot": "assets/img/starting-locations/start-location-misery-pleasant-valley-screenshot-1.png"
+      }
+    ]
+  }
+]

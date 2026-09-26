@@ -21,6 +21,8 @@ import {
 } from './cookies'
 import { NavLink, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AboutPage from './AboutPage'
+import StartingLocationsPage from './StartingLocationsPage'
+import StartingLocationPlaceholderPage from './StartingLocationPlaceholderPage'
 
 const NARROW_LAYOUT_MQ = '(max-width: 1023px)'
 const MIN_MENU_WIDTH = 240
@@ -79,6 +81,23 @@ const AREAS: AreaDef[] = [
   { id: 'tftft-transitional-cave', title: 'TFTFT Transitional Cave', coords: [610, 1060, 780, 1140], path: ['transition-cave'] },
   { id: 'tftft-langston-mine', title: 'Langston Mine', coords: [910, 1035, 1025, 1100], path: ['zone-of-contamination', 'langston-mine'] },
 ]
+
+const STARTING_LOCATION_GROUPS = [
+  { title: 'Misery', modeId: 'misery', regions: ['pleasant-valley'] },
+  {
+    title: 'Interloper',
+    modeId: 'interloper',
+    regions: [
+      'ash-canyon',
+      'blackrock',
+      'desolation-point',
+      'forlorn-muskeg',
+      'hushed-river-valley',
+      'pleasant-valley',
+      'timberwolf-mountain',
+    ],
+  },
+] as const
 
 function areaAtNaturalPoint(
   x: number,
@@ -325,9 +344,12 @@ export default function MapPage() {
   const [dragging, setDragging] = useState(false)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { regionId, locationId } = useParams()
+  const { modeId, regionId, locationId } = useParams()
   const isDev = searchParams.get('dev') === '1' || searchParams.get('dev') === 'true'
-  const isAbout = location.pathname.replace(/\/$/, '').endsWith('/about')
+  const routePath = location.pathname.replace(/\/$/, '') || '/'
+  const isAbout = routePath === '/about'
+  const isStartingSection = routePath === '/starting-locations' || routePath.startsWith('/starting-locations/')
+  const isStartingLocations = routePath === '/starting-locations'
   /** Empty = start map. [region] = level 2. [region, sub] = level 3. */
   const mapPath = useMemo(() => {
     if (!regionId) return []
@@ -335,9 +357,17 @@ export default function MapPage() {
     return [regionId, locationId]
   }, [regionId, locationId])
 
-  const toHome = () => '/'
-  const toRegion = (id: string) => `/region/${encodeURIComponent(id)}`
-  const toLocation = (rid: string, lid: string) => `/region/${encodeURIComponent(rid)}/${encodeURIComponent(lid)}`
+  const sectionRoot = isStartingSection ? '/starting-locations' : '/maps'
+  const startingModeForRegion = (id: string, modeOverride?: string) =>
+    modeOverride ?? (id === 'pleasant-valley' ? 'misery' : 'interloper')
+  const toRegion = (id: string, modeOverride?: string) =>
+    isStartingSection
+      ? `${sectionRoot}/${startingModeForRegion(id, modeOverride)}/${encodeURIComponent(id)}`
+      : `${sectionRoot}/region/${encodeURIComponent(id)}`
+  const toLocation = (rid: string, lid: string) =>
+    isStartingSection
+      ? `${sectionRoot}/${startingModeForRegion(rid, modeId)}/${encodeURIComponent(rid)}/${encodeURIComponent(lid)}`
+      : `${sectionRoot}/region/${encodeURIComponent(rid)}/${encodeURIComponent(lid)}`
 
   const inViewer = mapPath.length > 0
   const maxZoom = inViewer ? 6 : 10
@@ -646,21 +676,31 @@ export default function MapPage() {
 
   const viewerTitle = useMemo(() => titleForMapPath(maps, mapPath), [maps, mapPath])
 
-  const menuRegionTitle = isAbout ? 'About & credits' : inViewer ? viewerTitle : 'Overworld'
+  const menuRegionTitle = isAbout
+    ? 'About & credits'
+      : isStartingLocations
+        ? 'Starting locations'
+      : inViewer
+        ? viewerTitle
+        : 'Maps'
 
   useEffect(() => {
     const pageTitle = isAbout
       ? 'About & Credits — Unofficial Long Dark Maps'
+      : isStartingLocations
+        ? 'Starting Locations — The Long Dark'
       : inViewer
         ? `${viewerTitle} Map — The Long Dark`
         : 'Unofficial Long Dark Maps'
     const canonicalPath = isAbout
       ? '/about/'
+      : isStartingLocations
+        ? '/starting-locations/'
       : inViewer
       ? mapPath.length === 1
-        ? `/region/${encodeURIComponent(mapPath[0]!)}/`
-        : `/region/${encodeURIComponent(mapPath[0]!)}/${encodeURIComponent(mapPath[1]!)}/`
-      : '/'
+        ? `${sectionRoot}/${isStartingSection ? `${startingModeForRegion(mapPath[0]!, modeId)}/` : 'region/'}${encodeURIComponent(mapPath[0]!)}/`
+        : `${sectionRoot}/${isStartingSection ? `${startingModeForRegion(mapPath[0]!, modeId)}/` : 'region/'}${encodeURIComponent(mapPath[0]!)}/${encodeURIComponent(mapPath[1]!)}/`
+      : `${sectionRoot}/`
     document.title = pageTitle
     const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
     if (canonical) canonical.href = `${window.location.origin}${base.replace(/\/$/, '')}${canonicalPath}`
@@ -668,11 +708,13 @@ export default function MapPage() {
     if (description) {
       description.content = isAbout
         ? 'About, credits, sources, privacy, and contribution information for Unofficial Long Dark Maps.'
+        : isStartingLocations
+        ? 'Starting locations and region maps for The Long Dark.'
         : inViewer
         ? `View the ${viewerTitle} map for The Long Dark, with Pilgrim and Interloper variants.`
         : 'Browse Pilgrim, Interloper, and topographic maps for regions and transitions in The Long Dark.'
     }
-  }, [base, inViewer, isAbout, mapPath, viewerTitle])
+  }, [base, inViewer, isAbout, isStartingLocations, isStartingSection, mapPath, modeId, sectionRoot, viewerTitle])
 
   const mapControls = (
     <div className="tldViewerControls" aria-label="Map zoom controls">
@@ -907,6 +949,20 @@ export default function MapPage() {
     )
   }
 
+  const renderStartingRegion = (id: string, modeOverride: string) => {
+    if (!maps) return null
+    const title = titleForMapPath(maps, [id])
+    return (
+      <NavLink
+        key={id}
+        className={({ isActive }) => (isActive ? 'tldMenu__item active' : 'tldMenu__item')}
+        to={toRegion(id, modeOverride)}
+      >
+        {title}
+      </NavLink>
+    )
+  }
+
   const menu = (
     <aside
       ref={menuRef}
@@ -925,9 +981,6 @@ export default function MapPage() {
     >
       <div className="tldMenu__header">
         <div className="tldMenu__headerText">
-          <div className="tldMenu__title">
-            {effectiveMenuCollapsed ? 'Maps' : 'Unofficial Long Dark Maps'}
-          </div>
           <div className="tldMenu__regionName">{menuRegionTitle}</div>
         </div>
         <button
@@ -944,14 +997,7 @@ export default function MapPage() {
         </button>
       </div>
 
-      <div className="tldMenu__section">
-        <div className="tldMenu__label">Navigation</div>
-        <NavLink className={({ isActive }) => (isActive ? 'tldMenu__item active' : 'tldMenu__item')} to={toHome()}>
-          Home
-        </NavLink>
-      </div>
-
-      <div className="tldMenu__section">
+      {!isStartingSection && <div className="tldMenu__section">
         <div className="tldMenu__label">Map type</div>
         <div className="tldMenu__row">
           {MAP_TYPE_OPTIONS.map((t) => (
@@ -966,12 +1012,21 @@ export default function MapPage() {
             </button>
           ))}
         </div>
-      </div>
+      </div>}
 
+      {isStartingSection ? (
+        STARTING_LOCATION_GROUPS.map((group) => (
+          <div className="tldMenu__section" key={group.title}>
+            <div className="tldMenu__label">{group.title}</div>
+            {group.regions.map((region) => renderStartingRegion(region, group.modeId))}
+          </div>
+        ))
+      ) : (
+        <>
       <div className="tldMenu__section">
         <div className="tldMenu__sectionHeader">
           <span className="tldMenu__label" id="tld-menu-label-regions">
-            Regions
+            Region maps
           </span>
           {regionIdsWithLocs.length > 0 && (
             <button
@@ -1001,7 +1056,7 @@ export default function MapPage() {
       <div className="tldMenu__section">
         <div className="tldMenu__sectionHeader">
           <span className="tldMenu__label" id="tld-menu-label-transitions">
-            Transitions
+            Transition maps
           </span>
           {transitionIdsWithLocs.length > 0 && (
             <button
@@ -1027,6 +1082,8 @@ export default function MapPage() {
           {maps && transitions.map((t) => renderMapNavGroup(t))}
         </div>
       </div>
+        </>
+      )}
 
       <div className="tldMenu__section tldMenu__section--about">
         <NavLink className="tldMenu__item" to="/about">
@@ -1104,9 +1161,30 @@ export default function MapPage() {
       />
     ) : null
 
+  const topLevelBar = (
+    <header className="tldTopBar">
+      <NavLink className="tldTopBar__brand" to="/maps">
+        Unofficial Long Dark Maps
+      </NavLink>
+      <nav className="tldTopBar__nav" aria-label="Top-level navigation">
+        <NavLink
+          end
+          className={({ isActive }) => (isActive || (inViewer && !isStartingSection) ? 'active' : '')}
+          to="/maps"
+        >
+          Maps
+        </NavLink>
+        <NavLink className={({ isActive }) => (isActive ? 'active' : '')} to="/starting-locations">
+          Starting locations
+        </NavLink>
+      </nav>
+    </header>
+  )
+
   if (isAbout) {
     return (
       <main className={['tldLayout', narrow && 'tldLayout--narrow'].filter(Boolean).join(' ')}>
+        {topLevelBar}
         {(!narrow || drawerOpen) && menu}
         {navBackdrop}
         <div className="tldMain" aria-hidden={narrow && drawerOpen ? true : undefined}>
@@ -1117,9 +1195,38 @@ export default function MapPage() {
     )
   }
 
+  if (isStartingLocations) {
+    return (
+      <main className={['tldLayout', narrow && 'tldLayout--narrow'].filter(Boolean).join(' ')}>
+        {topLevelBar}
+        {(!narrow || drawerOpen) && menu}
+        {navBackdrop}
+        <div className="tldMain" aria-hidden={narrow && drawerOpen ? true : undefined}>
+          {mapTopBar}
+          <StartingLocationsPage />
+        </div>
+      </main>
+    )
+  }
+
+  if (isStartingSection && inViewer) {
+    return (
+      <main className={['tldLayout', narrow && 'tldLayout--narrow'].filter(Boolean).join(' ')}>
+        {topLevelBar}
+        {(!narrow || drawerOpen) && menu}
+        {navBackdrop}
+        <div className="tldMain" aria-hidden={narrow && drawerOpen ? true : undefined}>
+          {mapTopBar}
+          <StartingLocationPlaceholderPage modeId={modeId} regionId={regionId} title={viewerTitle} />
+        </div>
+      </main>
+    )
+  }
+
   if (inViewer) {
     return (
       <main className={['tldLayout', narrow && 'tldLayout--narrow'].filter(Boolean).join(' ')}>
+        {topLevelBar}
         {(!narrow || drawerOpen) && menu}
         {navBackdrop}
         <div className="tldMain" aria-hidden={narrow && drawerOpen ? true : undefined}>
@@ -1229,6 +1336,7 @@ export default function MapPage() {
 
   return (
     <main className={['tldLayout', narrow && 'tldLayout--narrow'].filter(Boolean).join(' ')}>
+      {topLevelBar}
       {(!narrow || drawerOpen) && menu}
       {navBackdrop}
       <div className="tldMain" aria-hidden={narrow && drawerOpen ? true : undefined}>

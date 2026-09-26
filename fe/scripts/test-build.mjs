@@ -8,8 +8,11 @@ const sitemap = readFileSync(new URL('../dist/sitemap2.xml', import.meta.url), '
 const sitemapUrls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => match[1])
 const escapeHtml = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
-assert.equal(routes.length, 45, 'expected home, about, and all region, transition, and location routes')
+assert.equal(routes.length, 141, 'expected app routes, starting-location routes, legacy aliases, and map routes')
 assert.equal(new Set(routes.map(route => route.path)).size, routes.length, 'route paths must be unique')
+for (const path of ['/maps/', '/maps/region/ash-canyon/', '/starting-locations/', '/starting-locations/misery/pleasant-valley/', '/starting-locations/interloper/ash-canyon/']) {
+  assert.ok(routes.some(route => route.path === path), `route manifest is missing ${path}`)
+}
 assert.equal(sitemapUrls.length, routes.length, 'sitemap must contain every route exactly once')
 assert.equal(new Set(sitemapUrls).size, sitemapUrls.length, 'sitemap URLs must be unique')
 
@@ -24,6 +27,8 @@ for (const route of routes) {
       ? 'Unofficial Long Dark Maps'
       : route.pageType === 'about'
         ? 'About & Credits — Unofficial Long Dark Maps'
+        : route.pageType === 'starting-locations'
+          ? 'Starting Locations — The Long Dark'
         : `${route.title} Map — The Long Dark`,
   )
   assert.ok(html.includes(`<title>${expectedTitle}</title>`), `${route.path} needs a unique route title`)
