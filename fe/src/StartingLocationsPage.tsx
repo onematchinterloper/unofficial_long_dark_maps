@@ -62,7 +62,7 @@ export default function StartingLocationsPage() {
         <p className="startingLocations__eyebrow">The Long Dark</p>
         <h1 id="starting-locations-title">Starting locations</h1>
         <p className="startingLocations__lead">
-          For advanced players: identify your starting location from the opening scene, then match it to the map to plan your first day.
+          For advanced Misery and Interloper players: you begin with no matches, so your first challenge is getting oriented quickly. Use the opening scene to identify your starting location, match it to the map, and find the nearest guaranteed source of matches.
         </p>
 
         {error && <p role="alert">Starting location data could not be loaded.</p>}
