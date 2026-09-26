@@ -4,6 +4,7 @@ export type StartingLocation = {
   id: number
   screenshot?: string
   map?: string
+  description?: string
 }
 
 export type StartingLocationGroup = {

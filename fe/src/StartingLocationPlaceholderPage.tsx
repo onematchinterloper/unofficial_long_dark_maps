@@ -7,6 +7,56 @@ type StartingLocationPlaceholderPageProps = {
   title: string
 }
 
+function renderInlineMarkdown(value: string) {
+  const tokenPattern = /(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\((https?:\/\/|\/)[^)]+\))/g
+  const parts = []
+  let cursor = 0
+  let match: RegExpExecArray | null
+  let key = 0
+
+  while ((match = tokenPattern.exec(value))) {
+    if (match.index > cursor) parts.push(value.slice(cursor, match.index))
+    const token = match[0]
+    if (token.startsWith('**')) {
+      parts.push(<strong key={key++}>{token.slice(2, -2)}</strong>)
+    } else if (token.startsWith('*')) {
+      parts.push(<em key={key++}>{token.slice(1, -1)}</em>)
+    } else {
+      const link = token.match(/^\[([^\]]+)\]\(((https?:\/\/|\/)[^)]+)\)$/)
+      if (link) parts.push(<a key={key++} href={link[2]}>{link[1]}</a>)
+    }
+    cursor = match.index + token.length
+  }
+
+  if (cursor < value.length) parts.push(value.slice(cursor))
+  return parts
+}
+
+function MarkdownDescription({ value }: { value: string }) {
+  return (
+    <div className="startingLocationPlaceholder__descriptionText">
+      {value.split(/\n\s*\n/).map((paragraph, index) => {
+        const lines = paragraph.split('\n')
+        const isBulletList = lines.length > 0 && lines.every((line) => /^\s*[-*]\s+/.test(line))
+        if (isBulletList) {
+          return (
+            <ul key={index}>
+              {lines.map((line, lineIndex) => <li key={lineIndex}>{renderInlineMarkdown(line.replace(/^\s*[-*]\s+/, ''))}</li>)}
+            </ul>
+          )
+        }
+        return (
+          <p key={index}>
+            {lines.map((line, lineIndex) => (
+              <span key={lineIndex}>{lineIndex > 0 && <br />}{renderInlineMarkdown(line)}</span>
+            ))}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
+
 function ImageCell({ path, label, onOpen }: { path?: string; label: string; onOpen: (path: string, label: string) => void }) {
   if (!path) {
     return <div className="startingLocationPlaceholder__image" role="img" aria-label={`${label} PNG placeholder`}>{label}.png</div>
@@ -24,6 +74,9 @@ function LocationRow({ location, prefix, onOpen }: { location: StartingLocation;
     <tr>
       <td><ImageCell path={location.screenshot} label={`${prefix}-screenshot-${location.id}`} onOpen={onOpen} /></td>
       <td><ImageCell path={location.map} label={`${prefix}-map-${location.id}`} onOpen={onOpen} /></td>
+      <td className="startingLocationPlaceholder__description">
+        <MarkdownDescription value={location.description ?? 'Match the opening screenshot to the corresponding map.'} />
+      </td>
     </tr>
   )
 }
@@ -64,6 +117,7 @@ export default function StartingLocationPlaceholderPage({
                 <tr>
                   <th scope="col">Screenshot</th>
                   <th scope="col">Map</th>
+                  <th scope="col">Description</th>
                 </tr>
               </thead>
               <tbody>

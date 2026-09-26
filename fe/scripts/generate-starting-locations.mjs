@@ -1,4 +1,4 @@
-import { mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -16,7 +16,29 @@ const regionTitles = {
   'timberwolf-mountain': 'Timberwolf Mountain',
 }
 
+function defaultDescription(mode, region, id) {
+  const title = regionTitles[region] ?? region
+  if (mode === 'misery') {
+    return 'Fixed Misery starting location outside Draft Dodger’s Cabin near Skeeter’s Ridge.'
+  }
+  return `Interloper starting location ${id} in ${title}. Match the opening screenshot to the corresponding map.`
+}
+
 mkdirSync(imageDir, { recursive: true })
+
+const existingDescriptions = new Map()
+if (existsSync(outputFile)) {
+  try {
+    const existing = JSON.parse(readFileSync(outputFile, 'utf8'))
+    for (const group of existing) {
+      for (const location of group.starting_locations ?? []) {
+        if (location.description) existingDescriptions.set(`${group.mode}/${group.region}/${location.id}`, location.description)
+      }
+    }
+  } catch {
+    // Regenerate from image files if the previous JSON is unavailable or invalid.
+  }
+}
 
 const groups = new Map()
 for (const filename of readdirSync(imageDir)) {
@@ -31,7 +53,10 @@ for (const filename of readdirSync(imageDir)) {
     title: regionTitles[region] ?? region,
     starting_locations: new Map(),
   }
-  const location = group.starting_locations.get(id) ?? { id: Number(id) }
+  const location = group.starting_locations.get(id) ?? {
+    id: Number(id),
+    description: existingDescriptions.get(`${mode}/${region}/${id}`) ?? defaultDescription(mode, region, Number(id)),
+  }
   location[kind] = `assets/img/starting-locations/${filename}`
   group.starting_locations.set(id, location)
   groups.set(key, group)

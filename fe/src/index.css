@@ -173,6 +173,16 @@ body {
   font-weight: 650;
 }
 
+.startingLocations__indexRow {
+  cursor: pointer;
+}
+
+.startingLocations__indexRow:hover,
+.startingLocations__indexRow:focus-visible {
+  background: rgba(255, 210, 120, 0.09);
+  outline: none;
+}
+
 .startingLocations__indexTable tbody td:nth-child(2) {
   width: 10rem;
   color: #ffd278;
@@ -314,6 +324,7 @@ body {
 
 .startingLocationPlaceholder__table {
   width: 100%;
+  min-width: 760px;
   border-collapse: collapse;
   text-align: left;
 }
@@ -330,10 +341,21 @@ body {
 
 .startingLocationPlaceholder__table th,
 .startingLocationPlaceholder__table td {
-  width: 50%;
   padding: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   vertical-align: middle;
+}
+
+.startingLocationPlaceholder__table th:nth-child(1),
+.startingLocationPlaceholder__table td:nth-child(1),
+.startingLocationPlaceholder__table th:nth-child(2),
+.startingLocationPlaceholder__table td:nth-child(2) {
+  width: 27%;
+}
+
+.startingLocationPlaceholder__table th:nth-child(3),
+.startingLocationPlaceholder__table td:nth-child(3) {
+  width: 46%;
 }
 
 .startingLocationPlaceholder__table thead th {
@@ -382,6 +404,39 @@ body {
   line-height: 1.2;
   opacity: 0;
   transition: opacity 120ms ease;
+}
+
+.startingLocationPlaceholder__description {
+  min-width: 280px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  vertical-align: top !important;
+}
+
+.startingLocationPlaceholder__descriptionText p {
+  margin: 0 0 12px;
+}
+
+.startingLocationPlaceholder__descriptionText p:last-child {
+  margin-bottom: 0;
+}
+
+.startingLocationPlaceholder__descriptionText ul {
+  margin: 0 0 12px;
+  padding-left: 1.2rem;
+}
+
+.startingLocationPlaceholder__descriptionText ul:last-child {
+  margin-bottom: 0;
+}
+
+.startingLocationPlaceholder__descriptionText strong {
+  color: #fff;
+}
+
+.startingLocationPlaceholder__descriptionText a {
+  color: #ffd278;
 }
 
 .startingLocationPlaceholder__imageButton:hover > span,
