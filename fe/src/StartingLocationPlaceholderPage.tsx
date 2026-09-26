@@ -59,7 +59,7 @@ function MarkdownDescription({ value }: { value: string }) {
 
 function ImageCell({ path, label, onOpen }: { path?: string; label: string; onOpen: (path: string, label: string) => void }) {
   if (!path) {
-    return <div className="startingLocationPlaceholder__image" role="img" aria-label={`${label} PNG placeholder`}>{label}.png</div>
+    return <div className="startingLocationPlaceholder__image" role="img" aria-label={`${label} WebP placeholder`}>{label}.webp</div>
   }
   return (
     <button className="startingLocationPlaceholder__imageButton" type="button" onClick={() => onOpen(path, label)}>
@@ -133,7 +133,7 @@ export default function StartingLocationPlaceholderPage({
         <div className="startingLocationPreview" role="presentation" onClick={() => setPreview(null)}>
           <div className="startingLocationPreview__dialog" role="dialog" aria-modal="true" aria-label={`${preview.label} preview`} onClick={(event) => event.stopPropagation()}>
             <div className="startingLocationPreview__toolbar">
-              <span>{preview.label}.png</span>
+              <span>{preview.label}.webp</span>
               <button type="button" onClick={() => setPreview(null)} aria-label="Close image preview">Close</button>
             </div>
             <img src={`${import.meta.env.BASE_URL}${preview.path}`} alt={preview.label} />

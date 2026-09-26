@@ -7,14 +7,14 @@
       {
         "id": 1,
         "description": "Immediately goat down to avoid wolves, then head **southeast**.\nGuaranteed matches at **Angler's Den** await.",
-        "map": "assets/img/starting-locations/start-location-interloper-ash-canyon-map-1.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-ash-canyon-screenshot-1.png"
+        "map": "assets/img/starting-locations/start-location-interloper-ash-canyon-map-1.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-ash-canyon-screenshot-1.webp"
       },
       {
         "id": 2,
         "description": "You start above **Shattered Cove**. Head **east** towards **Destroyed Ice Fishing Hut**, then climb/goat to **Homesteader's Respite**.\nThere should be matches and guaranteed Combat Pants.\n\nIf not head north and follow the river upstream towards **Angler's Den** for your guaranteed matches",
-        "map": "assets/img/starting-locations/start-location-interloper-ash-canyon-map-2.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-ash-canyon-screenshot-2.png"
+        "map": "assets/img/starting-locations/start-location-interloper-ash-canyon-map-2.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-ash-canyon-screenshot-2.webp"
       }
     ]
   },
@@ -26,14 +26,14 @@
       {
         "id": 1,
         "description": "South facing start. Head **south** then exit ravine by climbing up and crossing bridge to **Cook's Farm**.\nTravel **east** towards **Bricklayer's Retreat** for guaranteed matches.",
-        "map": "assets/img/starting-locations/start-location-interloper-blackrock-map-1.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-blackrock-screenshot-1.png"
+        "map": "assets/img/starting-locations/start-location-interloper-blackrock-map-1.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-blackrock-screenshot-1.webp"
       },
       {
         "id": 2,
         "description": "You start on the west side of Blackrock. Walk east towards\n-**Old Substation**\n-**Jailer's Residence**\n-**Trailer**\nGuaranteed matches await at **Bricklayer's Retreat**.",
-        "map": "assets/img/starting-locations/start-location-interloper-blackrock-map-2.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-blackrock-screenshot-2.png"
+        "map": "assets/img/starting-locations/start-location-interloper-blackrock-map-2.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-blackrock-screenshot-2.webp"
       }
     ]
   },
@@ -45,14 +45,14 @@
       {
         "id": 1,
         "description": "Head **northeast** towards **Hibernia Processing** for guaranteed matches.\n\nNote the guaranteed matches within Hibernia building have few possible spawn points.",
-        "map": "assets/img/starting-locations/start-location-interloper-desolation-point-map-1.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-desolation-point-screenshot-1.png"
+        "map": "assets/img/starting-locations/start-location-interloper-desolation-point-map-1.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-desolation-point-screenshot-1.webp"
       },
       {
         "id": 2,
         "description": "Head **northeast** towards **Hibernia Processing** for guaranteed matches.\n\nNote the guaranteed matches within Hibernia building have few possible spawn points.",
-        "map": "assets/img/starting-locations/start-location-interloper-desolation-point-map-2.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-desolation-point-screenshot-2.png"
+        "map": "assets/img/starting-locations/start-location-interloper-desolation-point-map-2.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-desolation-point-screenshot-2.webp"
       }
     ]
   },
@@ -64,14 +64,14 @@
       {
         "id": 1,
         "description": "Head North towards the **Poacher's Camp** (the abandoned red trains) for a guaranteed normal red Flare.\n\nNote: there are no guaranteed matches in Forlorn Muskeg.",
-        "map": "assets/img/starting-locations/start-location-interloper-forlorn-muskeg-map-1.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-forlorn-muskeg-screenshot-1.png"
+        "map": "assets/img/starting-locations/start-location-interloper-forlorn-muskeg-map-1.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-forlorn-muskeg-screenshot-1.webp"
       },
       {
         "id": 2,
         "description": "Head North towards train wreck, then head *east* towards the **Poacher's Camp** (the abandoned red trains) for a guaranteed normal red Flare.\n\nNote: there are no guaranteed matches in Forlorn Muskeg, so if you head towards **Old Spence Family Homestead** and you don't find matches, then you will get frostbite.",
-        "map": "assets/img/starting-locations/start-location-interloper-forlorn-muskeg-map-2.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-forlorn-muskeg-screenshot-2.png"
+        "map": "assets/img/starting-locations/start-location-interloper-forlorn-muskeg-map-2.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-forlorn-muskeg-screenshot-2.webp"
       }
     ]
   },
@@ -83,14 +83,14 @@
       {
         "id": 1,
         "description": "You start on the north side of Hushed River Valley.\n\n Pickup the cattails, then goat down westwards, then head northwest for a short walk to the shallow **cave** at maps coordinates x=700 y=1700, to pickup your guaranteed matches and crowbar.",
-        "map": "assets/img/starting-locations/start-location-interloper-hushed-river-valley-map-1.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-hushed-river-valley-screenshot-1.png"
+        "map": "assets/img/starting-locations/start-location-interloper-hushed-river-valley-map-1.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-hushed-river-valley-screenshot-1.webp"
       },
       {
         "id": 2,
         "description": "You start facing east, around the middle of the map (coordinates x=900 y=1250).\n\nHead **west** to cross the tree bridge, then head north to the shallow **cave** at maps coordinates x=700 y=1700, to pickup your guaranteed matches and crowbar.",
-        "map": "assets/img/starting-locations/start-location-interloper-hushed-river-valley-map-2.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-hushed-river-valley-screenshot-2.png"
+        "map": "assets/img/starting-locations/start-location-interloper-hushed-river-valley-map-2.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-hushed-river-valley-screenshot-2.webp"
       }
     ]
   },
@@ -102,20 +102,20 @@
       {
         "id": 1,
         "description": "Northeast start. Head south towards **Thompson's Crossing** to find the **Rural Store**.\n\nThere are 3x known spots in the **Rural Store** where the guaranteed matches spawn.",
-        "map": "assets/img/starting-locations/start-location-interloper-pleasant-valley-map-1.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-pleasant-valley-screenshot-1.png"
+        "map": "assets/img/starting-locations/start-location-interloper-pleasant-valley-map-1.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-pleasant-valley-screenshot-1.webp"
       },
       {
         "id": 2,
         "description": "You spawn in the middle of Pleasant Valley. Drop a stick and follow the stick direction **east** towards **Thompson's Crossing** to find the **Rural Store**.\n\nThere are 3x known spots in the **Rural Store** where the guaranteed matches spawn.",
-        "map": "assets/img/starting-locations/start-location-interloper-pleasant-valley-map-2.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-pleasant-valley-screenshot-2.png"
+        "map": "assets/img/starting-locations/start-location-interloper-pleasant-valley-map-2.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-pleasant-valley-screenshot-2.webp"
       },
       {
         "id": 3,
         "description": "Northwest start. Head southeast towards **Thompson's Crossing** to find the **Rural Store**.\n\nThere are 3x known spots in the **Rural Store** where the guaranteed matches spawn.",
-        "map": "assets/img/starting-locations/start-location-interloper-pleasant-valley-map-3.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-pleasant-valley-screenshot-3.png"
+        "map": "assets/img/starting-locations/start-location-interloper-pleasant-valley-map-3.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-pleasant-valley-screenshot-3.webp"
       }
     ]
   },
@@ -127,14 +127,14 @@
       {
         "id": 1,
         "description": "Western spawn. Head **southeast** towards **Mountaineer's Hut** for guaranteed matches.",
-        "map": "assets/img/starting-locations/start-location-interloper-timberwolf-mountain-map-1.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-timberwolf-mountain-screenshot-1.png"
+        "map": "assets/img/starting-locations/start-location-interloper-timberwolf-mountain-map-1.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-timberwolf-mountain-screenshot-1.webp"
       },
       {
         "id": 2,
         "description": "Eastern spawn. Head **south** towards **Wing**.\n\nThen head **west** towards **Mountaineer's Hut** for guaranteed matches.",
-        "map": "assets/img/starting-locations/start-location-interloper-timberwolf-mountain-map-2.png",
-        "screenshot": "assets/img/starting-locations/start-location-interloper-timberwolf-mountain-screenshot-2.png"
+        "map": "assets/img/starting-locations/start-location-interloper-timberwolf-mountain-map-2.webp",
+        "screenshot": "assets/img/starting-locations/start-location-interloper-timberwolf-mountain-screenshot-2.webp"
       }
     ]
   },
@@ -146,8 +146,8 @@
       {
         "id": 1,
         "description": "Fixed Misery starting location outside burnt **Draft Dodger’s Cabin** near **Skeeter’s Ridge**.\n\nNearest guaranteed matches is **Rural Store** in **Thompson Crossing** in the southeast direction.\n\nBut the stronger+riskier play is to head north to TWM/AC. Go via\n-**Skeeter’s Ridge**\n-**Plane Crash**\n-**Prepper's Abandon Cache**\n-climb up rope to **Timberwolf Mountain**.\n-**Mountainer's Hut**\n-Cure rabbits+guts + at least 1x deer hide\n-hit **Ash Canyon** for **Technical Backpack**\n-then **summit** TWM (possible hacksaw spawn at **Tail Section**)\n\nYour guaranteed matches will be waiting for you at **Mountaineer's Hut**.\n\nYou will need to rush to avoid frostbite, so avoid picking up cattails at the river.\n\n Restart if:\n-it is windy (walking too slowly will result in frostbite), or\n-if there are timberwolves at Skeeter's, or\n-if you don't get hacksaw by the time you get to summit.",
-        "map": "assets/img/starting-locations/start-location-misery-pleasant-valley-map-1.png",
-        "screenshot": "assets/img/starting-locations/start-location-misery-pleasant-valley-screenshot-1.png"
+        "map": "assets/img/starting-locations/start-location-misery-pleasant-valley-map-1.webp",
+        "screenshot": "assets/img/starting-locations/start-location-misery-pleasant-valley-screenshot-1.webp"
       }
     ]
   }

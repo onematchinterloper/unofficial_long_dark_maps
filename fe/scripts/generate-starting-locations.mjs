@@ -42,7 +42,7 @@ if (existsSync(outputFile)) {
 
 const groups = new Map()
 for (const filename of readdirSync(imageDir)) {
-  const match = filename.match(/^start-location-(misery|interloper)-(.+)-(screenshot|map)-(\d+)\.png$/i)
+  const match = filename.match(/^start-location-(misery|interloper)-(.+)-(screenshot|map)-(\d+)\.webp$/i)
   if (!match) continue
 
   const [, mode, region, kind, id] = match
