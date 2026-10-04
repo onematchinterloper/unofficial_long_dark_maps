@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { routeManifest } from './route-manifest.mjs'
 import { escapeHtml, staticContent } from './static-content.mjs'
+import { pageMetadata } from '../src/page-metadata.mjs'
 
 const BASE_URL = (process.env.SITE_URL ?? 'https://onematchinterloper.github.io/unofficial_long_dark_maps').replace(/\/$/, '')
 const BASE_PATH = (process.env.SITE_BASE ?? (process.env.CI === 'true' ? '/unofficial_long_dark_maps/' : '/')).replace(/\/$/, '')
@@ -10,28 +11,10 @@ const startingGroups = JSON.parse(readFileSync(new URL('../public/assets/js/star
 const routes = routeManifest(maps)
 
 function documentForRoute(template, route, { notFound = false } = {}) {
-  const pageTitle = notFound
-    ? 'Map not found — Unofficial Long Dark Maps'
-    : route.pageType === 'home'
-      ? 'Unofficial Long Dark Maps'
-      : route.pageType === 'about'
-        ? 'About & Credits — Unofficial Long Dark Maps'
-      : route.pageType === 'starting-locations'
-        ? 'Starting Locations — The Long Dark'
-      : route.pageType === 'starting-region'
-        ? `${route.title} ${route.modeId === 'misery' ? 'Misery' : 'Interloper'} Starting Locations | The Long Dark`
-      : `${route.title} Map — The Long Dark`
-  const description = notFound
-    ? 'The requested map page could not be found.'
-    : route.pageType === 'home'
-      ? 'Browse Pilgrim, Interloper, and topographic maps for regions and transitions in The Long Dark.'
-      : route.pageType === 'about'
-        ? 'About, credits, sources, privacy, and contribution information for Unofficial Long Dark Maps.'
-      : route.pageType === 'starting-locations'
-        ? 'Starting locations and region maps for The Long Dark.'
-      : route.pageType === 'starting-region'
-        ? `Identify ${route.modeId} starting locations in ${route.title} using opening screenshots, maps, and directions to matches.`
-      : `View the ${route.title} map for The Long Dark, with Pilgrim and Interloper variants.`
+  const [regionId, locationId] = route.segments
+  const region = maps.regions[regionId] ?? maps.transitions[regionId]
+  const node = locationId ? region?.locations?.[locationId] : region
+  const { title: pageTitle, description } = pageMetadata({ ...route, pageType: notFound ? 'not-found' : route.pageType, images: node?.map })
   const canonical = `${BASE_URL}${route.canonicalPath ?? route.path}`
   const heading = route.parentTitle ? `${route.parentTitle}: ${route.title}` : route.title
   const metadata = [

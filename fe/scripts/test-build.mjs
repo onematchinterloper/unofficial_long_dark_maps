@@ -11,7 +11,6 @@ assert.equal(
   'the previously published sitemap must remain available with the same URLs',
 )
 const sitemapUrls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => match[1])
-const escapeHtml = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
 assert.equal(routes.length, 141, 'expected app routes, starting-location routes, legacy aliases, and map routes')
 assert.equal(new Set(routes.map(route => route.path)).size, routes.length, 'route paths must be unique')
@@ -22,6 +21,9 @@ const canonicalRoutes = routes.filter(route => route.path === route.canonicalPat
 assert.equal(sitemapUrls.length, 54, 'sitemap must contain only preferred pages, not aliases')
 assert.equal(sitemapUrls.length, canonicalRoutes.length)
 assert.equal(new Set(sitemapUrls).size, sitemapUrls.length, 'sitemap URLs must be unique')
+const primaryPages = canonicalRoutes.map(route => readFileSync(new URL(`../dist${route.filePath}index.html`, import.meta.url), 'utf8'))
+assert.equal(new Set(primaryPages.map(html => html.match(/<title>(.*?)<\/title>/)?.[1])).size, canonicalRoutes.length, 'preferred pages need distinct titles')
+assert.equal(new Set(primaryPages.map(html => html.match(/<meta name="description" content="([^"]+)"/)?.[1])).size, canonicalRoutes.length, 'preferred pages need distinct descriptions')
 
 for (const route of routes) {
   const preferredRoute = routes.find(candidate => candidate.path === route.canonicalPath)
@@ -31,19 +33,23 @@ for (const route of routes) {
     : new URL(`../dist${route.filePath}index.html`, import.meta.url)
   assert.ok(existsSync(documentUrl), `missing generated document for ${route.path}`)
   const html = readFileSync(documentUrl, 'utf8')
-  const expectedTitle = escapeHtml(
-    preferredRoute.pageType === 'home'
-      ? 'Unofficial Long Dark Maps'
-      : preferredRoute.pageType === 'about'
-        ? 'About & Credits — Unofficial Long Dark Maps'
-        : preferredRoute.pageType === 'starting-locations'
-          ? 'Starting Locations — The Long Dark'
-        : preferredRoute.pageType === 'starting-region'
-          ? `${preferredRoute.title} ${preferredRoute.modeId === 'misery' ? 'Misery' : 'Interloper'} Starting Locations | The Long Dark`
-        : `${preferredRoute.title} Map — The Long Dark`,
-  )
-  assert.ok(html.includes(`<title>${expectedTitle}</title>`), `${route.path} needs a unique route title`)
-  assert.match(html, /<meta name="description"/, `${route.path} needs a description`)
+  const title = html.match(/<title>(.*?)<\/title>/)?.[1]
+  assert.ok(title && (title.includes('The Long Dark') || title.includes('Unofficial Long Dark Maps')), `${route.path} needs a descriptive game or site title`)
+  const primaryUrl = new URL(`../dist${preferredRoute.filePath}index.html`, import.meta.url)
+  const primary = readFileSync(primaryUrl, 'utf8')
+  assert.equal(title, primary.match(/<title>(.*?)<\/title>/)?.[1], `${route.path} must use its preferred page title`)
+  const description = html.match(/<meta name="description" content="([^"]+)"/)?.[1]
+  assert.ok(description && description.length > 40, `${route.path} needs a useful description`)
+  assert.ok(html.includes(`<meta property="og:title" content="${title}"`))
+  assert.ok(html.includes(`<meta property="og:description" content="${description}"`))
+  if (!preferredRoute.pageType) {
+    const [regionId, locationId] = preferredRoute.segments
+    const region = maps.regions[regionId] ?? maps.transitions[regionId]
+    const images = (locationId ? region.locations[locationId] : region).map
+    for (const [id, label] of [['pilgrim', 'Pilgrim'], ['interloper', 'Interloper'], ['topographic', 'topographic']]) {
+      assert.equal(description.includes(label), Boolean(images[id]?.trim()), `${route.path} must describe only available ${id} maps`)
+    }
+  }
   const expectedCanonical = `https://onematchinterloper.github.io/unofficial_long_dark_maps${route.canonicalPath}`
   assert.ok(html.includes(`<link rel="canonical" href="${expectedCanonical}"`), `${route.path} needs the preferred canonical URL`)
   assert.ok(html.includes(`<meta property="og:url" content="${expectedCanonical}"`), `${route.path} needs the preferred social URL`)
@@ -66,7 +72,7 @@ assert.match(mapPage, /<img[^>]+alt="Ash Canyon: interloper map"/)
 
 const notFound = readFileSync(new URL('../dist/404.html', import.meta.url), 'utf8')
 assert.match(notFound, /<meta name="robots" content="noindex"/)
-assert.match(notFound, /<title>Map not found — Unofficial Long Dark Maps<\/title>/)
+assert.match(notFound, /<title>Map Not Found \| Unofficial Long Dark Maps<\/title>/)
 const robots = readFileSync(new URL('../dist/robots.txt', import.meta.url), 'utf8')
 assert.match(robots, /Sitemap: https:\/\/onematchinterloper\.github\.io\/unofficial_long_dark_maps\/sitemap\.xml/)
 

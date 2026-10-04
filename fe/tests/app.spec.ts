@@ -4,6 +4,23 @@ import { readFileSync } from 'node:fs'
 
 const maps = JSON.parse(readFileSync(new URL('../public/assets/js/maps.json', import.meta.url), 'utf8'))
 
+test('metadata matches available variants and follows client-side navigation', async ({ page, request }) => {
+  const response = await request.get('/maps/region/mystery-lake/')
+  expect(await response.text()).toContain('Pilgrim, Interloper, and topographic maps')
+  await page.goto('/maps/region/mystery-lake/')
+  await expect(page).toHaveTitle('Mystery Lake Map | The Long Dark')
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Pilgrim, Interloper, and topographic maps/)
+  await page.locator('.tldTopBar').getByRole('link', { name: 'Starting locations', exact: true }).click()
+  await expect(page).toHaveTitle('Misery & Interloper Starting Locations | The Long Dark')
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'Misery & Interloper Starting Locations | The Long Dark')
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', /\/starting-locations\/$/)
+  await expect(page.locator('meta[property="og:description"]')).toHaveAttribute('content', /Identify your starting region/)
+  const cave = await request.get('/maps/region/desolation-point/cave/')
+  const caveHtml = await cave.text()
+  expect(caveHtml).toContain('Pilgrim and Interloper maps')
+  expect(caveHtml.match(/<meta name="description"[^>]+>/)?.[0]).not.toContain('topographic')
+})
+
 test('legacy redirects preserve query and fragment and agree with initial canonicals', async ({ page, request }) => {
   const cases = [
     ['/', '/maps/'],
@@ -71,7 +88,7 @@ test('about page presents credits and project information', async ({ page }) => 
   await expect(page.getByRole('heading', { name: 'Disclaimer' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Privacy' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Feedback and contributions' })).toBeVisible()
-  await expect(page).toHaveTitle('About & Credits — Unofficial Long Dark Maps')
+  await expect(page).toHaveTitle('About & Map Credits | Unofficial Long Dark Maps')
 })
 
 test('about page scrolls to all credits on mobile', async ({ page, isMobile }) => {
@@ -93,7 +110,7 @@ test('direct region and transition routes load as real pages', async ({ page }) 
     const response = await page.goto(path)
     expect(response?.status()).toBe(200)
     await expect(page.locator('.tldViewer img')).toBeVisible()
-    await expect(page).toHaveTitle(/Map — The Long Dark/)
+    await expect(page).toHaveTitle(/Map.*\| The Long Dark/)
   }
 })
 

@@ -24,6 +24,7 @@ import AboutPage from './AboutPage'
 import StartingLocationsPage from './StartingLocationsPage'
 import StartingLocationPlaceholderPage from './StartingLocationPlaceholderPage'
 import { canonicalPath } from './canonical-path.mjs'
+import { pageMetadata } from './page-metadata.mjs'
 
 const NARROW_LAYOUT_MQ = '(max-width: 1023px)'
 const MIN_MENU_WIDTH = 240
@@ -686,31 +687,42 @@ export default function MapPage() {
         : 'Maps'
 
   useEffect(() => {
-    const pageTitle = isAbout
-      ? 'About & Credits — Unofficial Long Dark Maps'
-      : isStartingLocations
-        ? 'Starting Locations — The Long Dark'
-      : isStartingSection && inViewer
-        ? `${viewerTitle} ${modeId === 'misery' ? 'Misery' : 'Interloper'} Starting Locations | The Long Dark`
-      : inViewer
-        ? `${viewerTitle} Map — The Long Dark`
-        : 'Unofficial Long Dark Maps'
-    document.title = pageTitle
-    const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
-    if (canonical) canonical.href = `${window.location.origin}${base.replace(/\/$/, '')}${canonicalPath(routePath)}`
-    const description = document.querySelector<HTMLMetaElement>('meta[name="description"]')
-    if (description) {
-      description.content = isAbout
-        ? 'About, credits, sources, privacy, and contribution information for Unofficial Long Dark Maps.'
-        : isStartingLocations
-        ? 'Starting locations and region maps for The Long Dark.'
-        : isStartingSection && inViewer
-        ? `Identify ${modeId} starting locations in ${viewerTitle} using opening screenshots, maps, and directions to matches.`
-        : inViewer
-        ? `View the ${viewerTitle} map for The Long Dark, with Pilgrim and Interloper variants.`
-        : 'Browse Pilgrim, Interloper, and topographic maps for regions and transitions in The Long Dark.'
+    // Keep the useful generated metadata until the catalog has loaded.
+    if (inViewer && !maps) return
+    const region = maps && mapPath[0] ? getRegionNode(maps, mapPath[0]) : undefined
+    const node = mapPath[1] ? region?.locations?.[mapPath[1]] : region
+    const { title, description } = pageMetadata({
+      pageType: isAbout ? 'about' : isStartingLocations ? 'starting-locations'
+        : isStartingSection && inViewer ? 'starting-region' : inViewer ? 'map' : 'home',
+      title: viewerTitle,
+      parentTitle: mapPath[1] ? region?.title : undefined,
+      modeId,
+      images: node?.map,
+    })
+    const url = `${window.location.origin}${base.replace(/\/$/, '')}${canonicalPath(routePath)}`
+    document.title = title
+    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+    if (!canonical) {
+      canonical = document.createElement('link')
+      canonical.rel = 'canonical'
+      document.head.append(canonical)
     }
-  }, [base, inViewer, isAbout, isStartingLocations, isStartingSection, modeId, routePath, viewerTitle])
+    canonical.href = url
+    for (const [attribute, key, content] of [
+      ['name', 'description', description],
+      ['property', 'og:title', title],
+      ['property', 'og:description', description],
+      ['property', 'og:url', url],
+    ]) {
+      let meta = document.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`)
+      if (!meta) {
+        meta = document.createElement('meta')
+        meta.setAttribute(attribute, key)
+        document.head.append(meta)
+      }
+      meta.content = content
+    }
+  }, [base, inViewer, isAbout, isStartingLocations, isStartingSection, maps, mapPath, modeId, routePath, viewerTitle])
 
   const mapControls = (
     <div className="tldViewerControls" aria-label="Map zoom controls">

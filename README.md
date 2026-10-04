@@ -51,6 +51,12 @@ query parameters and fragments. Generated pages include navigation, map images
 and source links, or starting-location screenshots and directions before
 JavaScript runs.
 
+Page titles and descriptions come from `fe/src/page-metadata.mjs`, shared by
+the static generator and React. Map descriptions list only variants present in
+the catalog; sub-map titles include their parent region when needed. Starting
+locations use distinct region and difficulty wording. Open Graph titles,
+descriptions, and URLs update alongside the canonical URL during navigation.
+
 For the Search Console property
 `https://onematchinterloper.github.io/unofficial_long_dark_maps/`, enter
 `sitemap.xml` without a leading slash. The full sitemap URL is
