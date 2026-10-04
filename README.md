@@ -38,3 +38,20 @@ Use `CI=true` so the Vite `base` matches GitHub Pages (`/unofficial_long_dark_ma
 - The site URL is **https://onematchinterloper.github.io/unofficial_long_dark_maps/**.
 
 `fe/vite.config.ts` sets `base` to `/unofficial_long_dark_maps/` when `CI=true`. If the repository name differs, change `base` to `/<repo-name>/`.
+
+## Sitemap and Search Console
+
+The production build generates `fe/dist/sitemap.xml` with all routes and an
+identical `sitemap2.xml` compatibility copy for older submissions.
+
+For the Search Console property
+`https://onematchinterloper.github.io/unofficial_long_dark_maps/`, enter
+`sitemap.xml` without a leading slash. The full sitemap URL is
+`https://onematchinterloper.github.io/unofficial_long_dark_maps/sitemap.xml`.
+Remove failed submissions for `/sitemap2.xml` and `/sitemap2.xm`: those are missing
+files at the domain root, and the second also has a filename typo.
+
+Search engines read the domain-root `robots.txt`, maintained in the sibling
+`onematchinterloper.github.io` repository. That file points to this project's
+full sitemap; the root `sitemap.xml` also indexes it. Deploy this repository
+before deploying root discovery changes that reference a new sitemap filename.

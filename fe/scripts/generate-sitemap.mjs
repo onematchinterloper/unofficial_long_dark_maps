@@ -73,5 +73,7 @@ ${routes.map(route => `  <url><loc>${BASE_URL}${route.path}</loc></url>`).join('
 </urlset>
 `
 
+writeFileSync(new URL('../dist/sitemap.xml', import.meta.url), xml)
+// Keep the previously published URL available for existing submissions and links.
 writeFileSync(new URL('../dist/sitemap2.xml', import.meta.url), xml)
-console.log(`sitemap2.xml: ${routes.length} URLs`)
+console.log(`sitemap.xml (and sitemap2.xml compatibility copy): ${routes.length} URLs`)
