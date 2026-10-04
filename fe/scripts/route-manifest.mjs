@@ -1,3 +1,5 @@
+import { canonicalPath, startingRegions } from '../src/canonical-path.mjs'
+
 export function routeManifest(maps) {
   const routes = [
     { path: '/', segments: [], title: 'Unofficial Long Dark Maps', pageType: 'home' },
@@ -34,18 +36,6 @@ export function routeManifest(maps) {
     }
   }
 
-  const startingRegions = {
-    misery: ['pleasant-valley'],
-    interloper: [
-      'ash-canyon',
-      'blackrock',
-      'desolation-point',
-      'forlorn-muskeg',
-      'hushed-river-valley',
-      'pleasant-valley',
-      'timberwolf-mountain',
-    ],
-  }
   for (const [modeId, regionIds] of Object.entries(startingRegions)) {
     for (const mapId of regionIds) {
       const map = maps.regions[mapId]
@@ -55,9 +45,12 @@ export function routeManifest(maps) {
         filePath: `/starting-locations/${modeId}/${mapId}/`,
         segments: [modeId, mapId],
         title: map.title ?? mapId,
+        pageType: 'starting-region',
+        modeId,
+        regionId: mapId,
       })
     }
   }
 
-  return routes
+  return routes.map(route => ({ ...route, canonicalPath: canonicalPath(route.path) }))
 }

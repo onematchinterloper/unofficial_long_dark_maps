@@ -669,13 +669,19 @@ body {
 }
 
 .tldStatic {
-  min-height: 100dvh;
-  display: grid;
-  place-content: center;
+  height: 100dvh;
+  overflow: auto;
   padding: 24px;
-  text-align: center;
+  text-align: left;
   color: #fff;
   background: #2c2c2c;
+}
+
+.tldStatic img {
+  display: block;
+  max-width: min(100%, 900px);
+  height: auto;
+  margin: 16px 0;
 }
 
 :where(button, a, [tabindex]):focus-visible {

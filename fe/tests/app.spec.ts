@@ -4,6 +4,41 @@ import { readFileSync } from 'node:fs'
 
 const maps = JSON.parse(readFileSync(new URL('../public/assets/js/maps.json', import.meta.url), 'utf8'))
 
+test('legacy redirects preserve query and fragment and agree with initial canonicals', async ({ page, request }) => {
+  const cases = [
+    ['/', '/maps/'],
+    ['/region/ash-canyon/', '/maps/region/ash-canyon/'],
+    ['/region/desolation-point/cave/', '/maps/region/desolation-point/cave/'],
+    ['/starting-locations/region/ash-canyon/', '/starting-locations/interloper/ash-canyon/'],
+    ['/starting-locations/region/pleasant-valley/', '/starting-locations/misery/pleasant-valley/'],
+    ['/starting-locations/region/mystery-lake/', '/maps/region/mystery-lake/'],
+  ]
+  for (const [alias, preferred] of cases) {
+    const response = await request.get(alias)
+    expect(response.status()).toBe(200)
+    expect(await response.text()).toContain(`<link rel="canonical" href="https://onematchinterloper.github.io/unofficial_long_dark_maps${preferred}"`)
+    await page.goto(`${alias}?mode=interloper#map`)
+    await expect(page).toHaveURL(new RegExp(`${preferred}\\?mode=interloper#map$`))
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', new RegExp(`${preferred}$`))
+  }
+})
+
+test('pages have useful maps and starting directions without JavaScript', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false })
+  const page = await context.newPage()
+  await page.route(/images\.steamusercontent\.com|i\.imgur\.com|i\.redd\.it/, route => route.abort())
+  await page.goto('http://127.0.0.1:4173/maps/')
+  await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Ash Canyon', exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Ash Canyon', exact: true }).click()
+  await expect(page).toHaveURL('http://127.0.0.1:4173/maps/region/ash-canyon/')
+  await expect(page.getByRole('link').filter({ has: page.getByAltText('Ash Canyon: pilgrim map') })).toHaveAttribute('href', maps.regions['ash-canyon'].map.pilgrim)
+  await page.goto('http://127.0.0.1:4173/starting-locations/interloper/ash-canyon/')
+  await expect(page.getByText(/Guaranteed matches at Angler's Den await/)).toBeVisible()
+  await expect(page.getByAltText('Ash Canyon interloper starting location 1: opening screenshot')).toHaveAttribute('src', /start-location-interloper-ash-canyon-screenshot-1.webp$/)
+  await context.close()
+})
+
 const testImage = Buffer.from(
   '<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200"><rect width="100%" height="100%" fill="#ddd"/></svg>',
 )

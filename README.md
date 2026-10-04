@@ -41,8 +41,15 @@ Use `CI=true` so the Vite `base` matches GitHub Pages (`/unofficial_long_dark_ma
 
 ## Sitemap and Search Console
 
-The production build generates `fe/dist/sitemap.xml` with all routes and an
+The production build generates `fe/dist/sitemap.xml` with preferred canonical routes and an
 identical `sitemap2.xml` compatibility copy for older submissions.
+
+All 141 route documents remain available, but only the 54 preferred URLs are
+listed in the sitemap. The homepage and legacy aliases point to the same
+canonical URLs in generated HTML and React, and browser redirects preserve
+query parameters and fragments. Generated pages include navigation, map images
+and source links, or starting-location screenshots and directions before
+JavaScript runs.
 
 For the Search Console property
 `https://onematchinterloper.github.io/unofficial_long_dark_maps/`, enter

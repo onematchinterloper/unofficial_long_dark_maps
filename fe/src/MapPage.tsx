@@ -23,6 +23,7 @@ import { NavLink, useLocation, useNavigate, useParams, useSearchParams } from 'r
 import AboutPage from './AboutPage'
 import StartingLocationsPage from './StartingLocationsPage'
 import StartingLocationPlaceholderPage from './StartingLocationPlaceholderPage'
+import { canonicalPath } from './canonical-path.mjs'
 
 const NARROW_LAYOUT_MQ = '(max-width: 1023px)'
 const MIN_MENU_WIDTH = 240
@@ -689,32 +690,27 @@ export default function MapPage() {
       ? 'About & Credits — Unofficial Long Dark Maps'
       : isStartingLocations
         ? 'Starting Locations — The Long Dark'
+      : isStartingSection && inViewer
+        ? `${viewerTitle} ${modeId === 'misery' ? 'Misery' : 'Interloper'} Starting Locations | The Long Dark`
       : inViewer
         ? `${viewerTitle} Map — The Long Dark`
         : 'Unofficial Long Dark Maps'
-    const canonicalPath = isAbout
-      ? '/about/'
-      : isStartingLocations
-        ? '/starting-locations/'
-      : inViewer
-      ? mapPath.length === 1
-        ? `${sectionRoot}/${isStartingSection ? `${startingModeForRegion(mapPath[0]!, modeId)}/` : 'region/'}${encodeURIComponent(mapPath[0]!)}/`
-        : `${sectionRoot}/${isStartingSection ? `${startingModeForRegion(mapPath[0]!, modeId)}/` : 'region/'}${encodeURIComponent(mapPath[0]!)}/${encodeURIComponent(mapPath[1]!)}/`
-      : `${sectionRoot}/`
     document.title = pageTitle
     const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
-    if (canonical) canonical.href = `${window.location.origin}${base.replace(/\/$/, '')}${canonicalPath}`
+    if (canonical) canonical.href = `${window.location.origin}${base.replace(/\/$/, '')}${canonicalPath(routePath)}`
     const description = document.querySelector<HTMLMetaElement>('meta[name="description"]')
     if (description) {
       description.content = isAbout
         ? 'About, credits, sources, privacy, and contribution information for Unofficial Long Dark Maps.'
         : isStartingLocations
         ? 'Starting locations and region maps for The Long Dark.'
+        : isStartingSection && inViewer
+        ? `Identify ${modeId} starting locations in ${viewerTitle} using opening screenshots, maps, and directions to matches.`
         : inViewer
         ? `View the ${viewerTitle} map for The Long Dark, with Pilgrim and Interloper variants.`
         : 'Browse Pilgrim, Interloper, and topographic maps for regions and transitions in The Long Dark.'
     }
-  }, [base, inViewer, isAbout, isStartingLocations, isStartingSection, mapPath, modeId, sectionRoot, viewerTitle])
+  }, [base, inViewer, isAbout, isStartingLocations, isStartingSection, modeId, routePath, viewerTitle])
 
   const mapControls = (
     <div className="tldViewerControls" aria-label="Map zoom controls">
